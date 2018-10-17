@@ -2,12 +2,11 @@ package eureka
 
 import (
 	"fmt"
+	"goeureka/util"
 	"io/ioutil"
 	"os"
 	"strings"
 	"time"
-
-	"github.com/eriklupander/goeureka/util"
 )
 
 var instanceId string

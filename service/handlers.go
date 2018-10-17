@@ -3,12 +3,11 @@ package service
 import (
 	"encoding/json"
 	"fmt"
-
+	"goeureka/model"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
-	"strconv"
-	"github.com/eriklupander/goeureka/model"
 )
 
 func Index(w http.ResponseWriter, r *http.Request) {
@@ -44,8 +43,8 @@ func VendorShow(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println("Loading vendors for product " + strconv.Itoa(productId))
 	vendors := make([]model.Vendor, 0, 2)
-	v1 := model.Vendor{ Id: 1, Name : "Internetstore.biz",}
-	v2 := model.Vendor{ Id: 2, Name : "Junkyard.nu",}
+	v1 := model.Vendor{Id: 1, Name: "Internetstore.biz"}
+	v2 := model.Vendor{Id: 2, Name: "Junkyard.nu"}
 	vendors = append(vendors, v1, v2)
 	if len(vendors) > 0 {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -63,8 +62,6 @@ func VendorShow(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 }
-
-
 
 /*
 Test with this curl command:
