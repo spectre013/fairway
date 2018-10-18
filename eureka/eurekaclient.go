@@ -9,22 +9,30 @@ import (
 	"time"
 )
 
-var instanceId string
+type Eureka interface {
+	Register()
+	StartHeartbeat()
+}
 
-func Register() {
+var instanceId string
+var eurekaURL string
+
+func Register(name string, eurekaPath string) {
 	instanceId = util.GetUUID()
+	eurekaURL = eurekaPath
 
 	dir, _ := os.Getwd()
 	data, _ := ioutil.ReadFile(dir + "/reg.json")
 
 	tpl := string(data)
 	tpl = strings.Replace(tpl, "${ipAddress}", util.GetLocalIP(), -1)
+	tpl = strings.Replace(tpl, "${app}", name, -1)
 	tpl = strings.Replace(tpl, "${port}", "8080", -1)
 	tpl = strings.Replace(tpl, "${instanceId}", instanceId, -1)
 
 	// Register.
 	registerAction := HttpAction{
-		Url:         "http://localhost:8761/eureka/apps/vendor",
+		Url:         eurekaURL + "/apps/" + name,
 		Method:      "POST",
 		ContentType: "application/json; charset=utf-8",
 		Body:        tpl,
@@ -32,39 +40,38 @@ func Register() {
 	var result bool
 	for {
 		fmt.Println("Attempting to register with Eureka ...")
-		fmt.Println(registerAction)
 		result = DoHttpRequest(registerAction)
 		if result {
-			fmt.Println(result)
 			fmt.Println("Eureka registration successfull ... ")
 			break
 		} else {
+			fmt.Println("Eureka registration unsuccessfull or euraka is down will keep trying... ")
 			time.Sleep(time.Second * 5)
 		}
 	}
 }
 
-func StartHeartbeat() {
+func StartHeartbeat(name string) {
 	for {
 		time.Sleep(time.Second * 30)
 		fmt.Println("sending heartbeat ...")
-		heartbeat()
+		heartbeat(name)
 	}
 }
 
-func heartbeat() {
+func heartbeat(name string) {
 	heartbeatAction := HttpAction{
-		Url:    "http://localhost:8761/eureka/apps/vendor/" + util.GetLocalIP() + ":vendor:" + instanceId,
+		Url:    eurekaURL + "/apps/" + name + "/" + util.GetLocalIP() + ":" + name + ":" + instanceId,
 		Method: "PUT",
 	}
 	DoHttpRequest(heartbeatAction)
 }
 
-func Deregister() {
+func Deregister(name string) {
 	fmt.Println("Trying to deregister application...")
 	// Deregister
 	deregisterAction := HttpAction{
-		Url:    "http://localhost:8761/eureka/apps/vendor/" + util.GetLocalIP() + ":vendor:" + instanceId,
+		Url:    eurekaURL + "/apps/" + name + "/" + name + ":" + instanceId,
 		Method: "DELETE",
 	}
 	DoHttpRequest(deregisterAction)

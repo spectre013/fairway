@@ -1,4 +1,4 @@
-package main
+package goeureka
 
 import (
 	"goeureka/eureka"
@@ -9,40 +9,57 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
+
+	"github.com/gorilla/mux"
 )
 
-func main() {
-	handleSigterm() // Graceful shutdown on Ctrl+C or kill
-
-	go startWebServer() // Starts HTTP service  (async)
-
-	eureka.Register() // Performs Eureka registration
-
-	go eureka.StartHeartbeat() // Performs Eureka heartbeating (async)
-
-	// Block...
-	wg := sync.WaitGroup{} // Use a WaitGroup to block main() exit
-	wg.Add(1)
-	wg.Wait()
+type EurekaClient struct {
+	Client eureka.Eureka
+	Router *mux.Router
 }
 
-func handleSigterm() {
+func Init(name string, eurekaPath string, restService bool) EurekaClient {
+	handleSigterm(name) // Graceful shutdown on Ctrl+C or kill
+	router := buildRouter()
+	eureka.Register(name, eurekaPath) // Performs Eureka registration
+	go eureka.StartHeartbeat(name)    // Performs Eureka heartbeating (async)
+	// start server and Block if not a rest service...
+	if !restService {
+		go startWebServer(router)
+		wg := sync.WaitGroup{} // Use a WaitGroup to block main() exit
+		wg.Add(1)
+		wg.Wait()
+	}
+
+	var e eureka.Eureka
+	return EurekaClient{Client: e, Router: router}
+}
+
+func handleSigterm(name string) {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	signal.Notify(c, syscall.SIGTERM)
 	go func() {
 		<-c
-		eureka.Deregister()
+		eureka.Deregister(name)
 		os.Exit(1)
 	}()
 }
 
-func startWebServer() {
-	router := service.NewRouter()
-	log.Println("Starting HTTP service at 8080")
-	err := http.ListenAndServe(":8080", router)
-	if err != nil {
-		log.Println("An error occured starting HTTP listener at port 8080")
-		log.Println("Error: " + err.Error())
+func buildRouter() *mux.Router {
+	return service.NewRouter()
+}
+
+func startWebServer(router *mux.Router) {
+	log.Println("Starting HTTP service at 23456")
+	srv := &http.Server{
+		Handler: router,
+		Addr:    ":23456",
+		// Good practice: enforce timeouts for servers you create!
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
 	}
+
+	log.Fatal(srv.ListenAndServe())
 }

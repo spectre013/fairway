@@ -17,14 +17,17 @@ func DoHttpRequest(httpAction HttpAction) bool {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	resp, err := DefaultTransport.RoundTrip(req)
-	defer resp.Body.Close()
-	body := getBody(resp)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		log.Printf("HTTP request failed: %s", err)
-		log.Println("Response body: ", body)
-		return false
-	} else {
-		return true
+	if resp != nil {
+		defer resp.Body.Close()
+		body := getBody(resp)
+		if err != nil {
+			log.Printf("HTTP request failed: %s", err)
+			log.Println("Response body: ", body)
+			log.Println("Response: ", resp.StatusCode)
+			return false
+		} else if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusNoContent {
+			return true
+		}
 	}
 	return false
 }

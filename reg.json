@@ -1,10 +1,10 @@
 {
     "instance": {
-        "instanceId": "vendor:${instanceId}",
-        "hostName": "c00064.issinc.com",
-        "app": "vendor",
+        "instanceId": "${app}:${instanceId}",
+        "hostName": "${ipAddress}",
+        "app": "${app}",
         "ipAddr": "${ipAddress}",
-        "vipAddress": "vendor-data-service",
+        "vipAddress": "${app}",
         "status": "UP",
         "port": {
             "$":8080,

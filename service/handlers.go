@@ -3,11 +3,7 @@ package service
 import (
 	"encoding/json"
 	"fmt"
-	"goeureka/model"
 	"net/http"
-	"strconv"
-
-	"github.com/gorilla/mux"
 )
 
 func Index(w http.ResponseWriter, r *http.Request) {
@@ -33,39 +29,3 @@ func Health(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 }
-
-func VendorShow(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	var productId int
-	var err error
-	if productId, err = strconv.Atoi(vars["productId"]); err != nil {
-		panic(err)
-	}
-	fmt.Println("Loading vendors for product " + strconv.Itoa(productId))
-	vendors := make([]model.Vendor, 0, 2)
-	v1 := model.Vendor{Id: 1, Name: "Internetstore.biz"}
-	v2 := model.Vendor{Id: 2, Name: "Junkyard.nu"}
-	vendors = append(vendors, v1, v2)
-	if len(vendors) > 0 {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(vendors); err != nil {
-			panic(err)
-		}
-		return
-	}
-
-	// If we didn't find it, 404
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusNotFound)
-	if err := json.NewEncoder(w).Encode(model.JsonErr{Code: http.StatusNotFound, Text: "Not Found"}); err != nil {
-		panic(err)
-	}
-}
-
-/*
-Test with this curl command:
-
-curl -H "Content-Type: application/json" -d '{"name":"New course"}' http://localhost:8080/courses
-
-*/
