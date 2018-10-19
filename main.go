@@ -17,13 +17,23 @@ type EurekaClient struct {
 	Router *mux.Router
 }
 
-func Init(name string, eurekaPath string, vip_address string, restService bool) EurekaClient {
-	log.Println(name, eurekaPath)
-	handleSigterm(name) // Graceful shutdown on Ctrl+C or kill
+type EurekaConfig struct {
+	Name        string
+	Url         string
+	VipAddress  string
+	IpAddress   string
+	HostName    string
+	Port        string
+	SecurePort  string
+	RestService bool
+}
+
+func Init(config EurekaConfig) EurekaClient {
+	handleSigterm(config) // Graceful shutdown on Ctrl+C or kill
 	router := buildRouter()
-	go Register(name, eurekaPath, vip_address) // Performs Eureka registration
+	go Register(config) // Performs Eureka registration
 	// start server and Block if not a rest service...
-	if !restService {
+	if !config.RestService {
 		go startWebServer(router)
 		wg := sync.WaitGroup{} // Use a WaitGroup to block main() exit
 		wg.Add(1)
@@ -34,13 +44,13 @@ func Init(name string, eurekaPath string, vip_address string, restService bool) 
 	return EurekaClient{Client: e, Router: router}
 }
 
-func handleSigterm(name string) {
+func handleSigterm(config EurekaConfig) {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	signal.Notify(c, syscall.SIGTERM)
 	go func() {
 		<-c
-		Deregister(name)
+		Deregister(config)
 		os.Exit(1)
 	}()
 }
