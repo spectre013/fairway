@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
+
+	ping "github.com/sparrc/go-ping"
 )
 
 type Eureka interface {
@@ -75,6 +77,16 @@ func Register(name string, eurekaPath string) {
 		Body:        toJson(reg),
 	}
 	fmt.Println(registerAction)
+
+	pinger, err := ping.NewPinger(eurekaURL)
+	if err != nil {
+		panic(err)
+	}
+
+	pinger.Count = 3
+	pinger.Run()                 // blocks until finished
+	stats := pinger.Statistics() // get send/receive/rtt stats
+	fmt.Println(stats)
 	var result bool
 	for {
 		fmt.Println("Attempting to register with Eureka at ", eurekaPath)
