@@ -41,6 +41,7 @@ func Register(name string, eurekaPath string) {
 		fmt.Println("Attempting to register with Eureka ...")
 		result = DoHttpRequest(registerAction)
 		if result {
+			go StartHeartbeat(name) // Performs Eureka heartbeating (async)
 			fmt.Println("Eureka registration successfull ... ")
 			break
 		} else {

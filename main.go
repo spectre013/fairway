@@ -22,7 +22,6 @@ func Init(name string, eurekaPath string, restService bool) EurekaClient {
 	handleSigterm(name) // Graceful shutdown on Ctrl+C or kill
 	router := buildRouter()
 	go Register(name, eurekaPath) // Performs Eureka registration
-	go StartHeartbeat(name)       // Performs Eureka heartbeating (async)
 	// start server and Block if not a rest service...
 	if !restService {
 		go startWebServer(router)
