@@ -7,11 +7,13 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 	// "strconv"
 )
 
 // Accepts a Httpaction and a one-way channel to write the results to.
 func DoHttpRequest(httpAction HttpAction) bool {
+	http.DefaultClient.Timeout = 10 * time.Second
 	fmt.Println("Begin Request")
 	req := buildHttpRequest(httpAction)
 	fmt.Println("Request built")
