@@ -1,16 +1,43 @@
 package goeureka
 
 import (
+	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"strings"
 	"time"
 )
 
 type Eureka interface {
 	Register()
 	StartHeartbeat()
+}
+
+type EurekaRegistration struct {
+	Instance Instance `json:"instance"`
+}
+
+type Instance struct {
+	InstanceId     string     `json:"instanceId"`
+	HostName       string     `json:"hostName"`
+	App            string     `json:"app"`
+	IpAddr         string     `json:"ipAddr"`
+	VipAddress     string     `json:"vipAddress"`
+	Status         string     `json:"status"`
+	Port           Port       `json:"port"`
+	SecurePort     Port       `json:"securePort"`
+	HomePageUrl    string     `json:"homePageUrl"`
+	StatusPageUrl  string     `json:"statusPageUrl"`
+	HealthCheckUrl string     `json:"healthCheckUrl"`
+	DataCenterInfo DataCenter `json:"dataCenterInfo"`
+}
+
+type Port struct {
+	PortNumber string `json:"$"`
+	Enabled    bool   `json:"@enabled"`
+}
+
+type DataCenter struct {
+	Class string `json:"@class"`
+	Name  string `json:"name"`
 }
 
 var instanceId string
@@ -20,22 +47,34 @@ func Register(name string, eurekaPath string) {
 	instanceId = GetUUID()
 	eurekaURL = eurekaPath
 
-	dir, _ := os.Getwd()
-	data, _ := ioutil.ReadFile(dir + "/reg.json")
+	reg := EurekaRegistration{}
+	port := Port{PortNumber: ":8080", Enabled: true}
+	secureport := Port{PortNumber: ":8443", Enabled: false}
+	dataCenter := DataCenter{Class: "com.netflix.appinfo.MyDataCenterInfo", Name: "MyOwn"}
+	instance := Instance{
+		InstanceId:     name + ":" + instanceId,
+		HostName:       "c00064.issinc.com",
+		App:            name,
+		IpAddr:         "172.20.3.154",
+		VipAddress:     name,
+		Status:         "UP",
+		Port:           port,
+		SecurePort:     secureport,
+		HomePageUrl:    "http://172.20.3.154:8181/",
+		StatusPageUrl:  "http://172.20.3.154:8181/info",
+		HealthCheckUrl: "http://172.20.3.154:8181/health",
+		DataCenterInfo: dataCenter}
 
-	tpl := string(data)
-	tpl = strings.Replace(tpl, "${ipAddress}", GetLocalIP(), -1)
-	tpl = strings.Replace(tpl, "${app}", name, -1)
-	tpl = strings.Replace(tpl, "${port}", "8080", -1)
-	tpl = strings.Replace(tpl, "${instanceId}", instanceId, -1)
-	fmt.Println(tpl)
+	reg.Instance = instance
+
 	// Register.
 	registerAction := HttpAction{
 		Url:         eurekaURL + "/apps/" + name,
 		Method:      "POST",
 		ContentType: "application/json; charset=utf-8",
-		Body:        tpl,
+		Body:        toJson(reg),
 	}
+	fmt.Println(registerAction)
 	var result bool
 	for {
 		fmt.Println("Attempting to register with Eureka at ", eurekaPath)
@@ -49,6 +88,14 @@ func Register(name string, eurekaPath string) {
 			time.Sleep(time.Second * 5)
 		}
 	}
+}
+
+func toJson(r EurekaRegistration) string {
+	f, err := json.Marshal(r)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	return string(f)
 }
 
 func StartHeartbeat(name string) {
