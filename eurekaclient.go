@@ -78,7 +78,7 @@ func Register(name string, eurekaPath string) {
 	}
 	fmt.Println(registerAction)
 
-	pinger, err := ping.NewPinger(eurekaURL)
+	pinger, err := ping.NewPinger("172.20.3.154")
 	if err != nil {
 		panic(err)
 	}
