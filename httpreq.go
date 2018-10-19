@@ -13,7 +13,6 @@ import (
 
 // Accepts a Httpaction and a one-way channel to write the results to.
 func DoHttpRequest(httpAction HttpAction) bool {
-	http.DefaultClient.Timeout = 10 * time.Second
 	fmt.Println("Begin Request")
 	req := buildHttpRequest(httpAction)
 	fmt.Println("Request built")
@@ -22,7 +21,7 @@ func DoHttpRequest(httpAction HttpAction) bool {
 	}
 	fmt.Println("Transport compleetet")
 	//resp, err := DefaultTransport.RoundTrip(req)
-	client := &http.Client{Transport: DefaultTransport}
+	client := &http.Client{Transport: DefaultTransport, Timeout: time.Duration(10 * time.Second)}
 	fmt.Println("Client set up")
 	resp, err := client.Do(req)
 	fmt.Println("request compelete")
