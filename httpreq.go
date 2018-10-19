@@ -2,6 +2,7 @@ package goeureka
 
 import (
 	"crypto/tls"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -11,14 +12,19 @@ import (
 
 // Accepts a Httpaction and a one-way channel to write the results to.
 func DoHttpRequest(httpAction HttpAction) bool {
+	fmt.Println("Begin Request")
 	req := buildHttpRequest(httpAction)
-
+	fmt.Println("Request built")
 	var DefaultTransport = &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
+	fmt.Println("Transport compleetet")
 	//resp, err := DefaultTransport.RoundTrip(req)
 	client := &http.Client{Transport: DefaultTransport}
+	fmt.Println("Client set up")
 	resp, err := client.Do(req)
+	fmt.Println("request compelete")
+	fmt.Println(resp)
 	if resp != nil {
 		defer resp.Body.Close()
 		body := getBody(resp)
