@@ -2,7 +2,6 @@ package goeureka
 
 import (
 	"fmt"
-	"goeureka/util"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -18,14 +17,14 @@ var instanceId string
 var eurekaURL string
 
 func Register(name string, eurekaPath string) {
-	instanceId = util.GetUUID()
+	instanceId = GetUUID()
 	eurekaURL = eurekaPath
 
 	dir, _ := os.Getwd()
 	data, _ := ioutil.ReadFile(dir + "/reg.json")
 
 	tpl := string(data)
-	tpl = strings.Replace(tpl, "${ipAddress}", util.GetLocalIP(), -1)
+	tpl = strings.Replace(tpl, "${ipAddress}", GetLocalIP(), -1)
 	tpl = strings.Replace(tpl, "${app}", name, -1)
 	tpl = strings.Replace(tpl, "${port}", "8080", -1)
 	tpl = strings.Replace(tpl, "${instanceId}", instanceId, -1)
@@ -61,7 +60,7 @@ func StartHeartbeat(name string) {
 
 func heartbeat(name string) {
 	heartbeatAction := HttpAction{
-		Url:    eurekaURL + "/apps/" + name + "/" + util.GetLocalIP() + ":" + name + ":" + instanceId,
+		Url:    eurekaURL + "/apps/" + name + "/" + GetLocalIP() + ":" + name + ":" + instanceId,
 		Method: "PUT",
 	}
 	DoHttpRequest(heartbeatAction)
