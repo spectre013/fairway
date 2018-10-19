@@ -43,7 +43,7 @@ type DataCenter struct {
 var instanceId string
 var eurekaURL string
 
-func Register(name string, eurekaPath string) {
+func Register(name string, eurekaPath string, vip_address string) {
 	instanceId = GetUUID()
 	eurekaURL = eurekaPath
 
@@ -56,7 +56,7 @@ func Register(name string, eurekaPath string) {
 		HostName:       "c00064.issinc.com",
 		App:            name,
 		IpAddr:         "172.20.3.154",
-		VipAddress:     name,
+		VipAddress:     vip_address,
 		Status:         "UP",
 		Port:           port,
 		SecurePort:     secureport,
