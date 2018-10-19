@@ -18,10 +18,11 @@ type EurekaClient struct {
 }
 
 func Init(name string, eurekaPath string, restService bool) EurekaClient {
+	log.Println(name, eurekaPath)
 	handleSigterm(name) // Graceful shutdown on Ctrl+C or kill
 	router := buildRouter()
-	Register(name, eurekaPath) // Performs Eureka registration
-	go StartHeartbeat(name)    // Performs Eureka heartbeating (async)
+	go Register(name, eurekaPath) // Performs Eureka registration
+	go StartHeartbeat(name)       // Performs Eureka heartbeating (async)
 	// start server and Block if not a rest service...
 	if !restService {
 		go startWebServer(router)

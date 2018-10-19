@@ -28,7 +28,7 @@ func Register(name string, eurekaPath string) {
 	tpl = strings.Replace(tpl, "${app}", name, -1)
 	tpl = strings.Replace(tpl, "${port}", "8080", -1)
 	tpl = strings.Replace(tpl, "${instanceId}", instanceId, -1)
-
+	fmt.Println(tpl)
 	// Register.
 	registerAction := HttpAction{
 		Url:         eurekaURL + "/apps/" + name,
