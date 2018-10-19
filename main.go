@@ -17,7 +17,7 @@ type EurekaClient struct {
 	Router *mux.Router
 }
 
-func Init(name string, eurekaPath string,vip_address string restService bool) EurekaClient {
+func Init(name string, eurekaPath string, vip_address string, restService bool) EurekaClient {
 	log.Println(name, eurekaPath)
 	handleSigterm(name) // Graceful shutdown on Ctrl+C or kill
 	router := buildRouter()
