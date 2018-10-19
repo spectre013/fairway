@@ -13,10 +13,12 @@ import (
 func DoHttpRequest(httpAction HttpAction) bool {
 	req := buildHttpRequest(httpAction)
 
-	var DefaultTransport http.RoundTripper = &http.Transport{
+	var DefaultTransport = &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
-	resp, err := DefaultTransport.RoundTrip(req)
+	//resp, err := DefaultTransport.RoundTrip(req)
+	client := &http.Client{Transport: DefaultTransport}
+	resp, err := client.Do(req)
 	if resp != nil {
 		defer resp.Body.Close()
 		body := getBody(resp)
