@@ -1,8 +1,6 @@
 package goeureka
 
 import (
-	"goeureka/eureka"
-	"goeureka/service"
 	"log"
 	"net/http"
 	"os"
@@ -15,15 +13,15 @@ import (
 )
 
 type EurekaClient struct {
-	Client eureka.Eureka
+	Client Eureka
 	Router *mux.Router
 }
 
 func Init(name string, eurekaPath string, restService bool) EurekaClient {
 	handleSigterm(name) // Graceful shutdown on Ctrl+C or kill
 	router := buildRouter()
-	eureka.Register(name, eurekaPath) // Performs Eureka registration
-	go eureka.StartHeartbeat(name)    // Performs Eureka heartbeating (async)
+	Register(name, eurekaPath) // Performs Eureka registration
+	go StartHeartbeat(name)    // Performs Eureka heartbeating (async)
 	// start server and Block if not a rest service...
 	if !restService {
 		go startWebServer(router)
@@ -32,7 +30,7 @@ func Init(name string, eurekaPath string, restService bool) EurekaClient {
 		wg.Wait()
 	}
 
-	var e eureka.Eureka
+	var e Eureka
 	return EurekaClient{Client: e, Router: router}
 }
 
@@ -42,13 +40,13 @@ func handleSigterm(name string) {
 	signal.Notify(c, syscall.SIGTERM)
 	go func() {
 		<-c
-		eureka.Deregister(name)
+		Deregister(name)
 		os.Exit(1)
 	}()
 }
 
 func buildRouter() *mux.Router {
-	return service.NewRouter()
+	return NewRouter()
 }
 
 func startWebServer(router *mux.Router) {

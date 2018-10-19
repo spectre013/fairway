@@ -1,4 +1,4 @@
-package service
+package goeureka
 
 /**
  * From http://thenewstack.io/make-a-restful-json-api-go/
