@@ -2,19 +2,17 @@ package goeureka
 
 import (
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
-	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/labstack/echo"
 )
 
 type EurekaClient struct {
 	Client Eureka
-	Router *mux.Router
+	Routes Routes
 }
 
 type EurekaConfig struct {
@@ -30,18 +28,18 @@ type EurekaConfig struct {
 
 func Init(config EurekaConfig) EurekaClient {
 	handleSigterm(config) // Graceful shutdown on Ctrl+C or kill
-	router := buildRouter()
+	routes := routes
 	go Register(config) // Performs Eureka registration
 	// start server and Block if not a rest service...
 	if !config.RestService {
-		go startWebServer(router)
+		go startWebServer(routes, config.Port)
 		wg := sync.WaitGroup{} // Use a WaitGroup to block main() exit
 		wg.Add(1)
 		wg.Wait()
 	}
 
 	var e Eureka
-	return EurekaClient{Client: e, Router: router}
+	return EurekaClient{Client: e, Routes: routes}
 }
 
 func handleSigterm(config EurekaConfig) {
@@ -55,19 +53,9 @@ func handleSigterm(config EurekaConfig) {
 	}()
 }
 
-func buildRouter() *mux.Router {
-	return NewRouter()
-}
-
-func startWebServer(router *mux.Router) {
-	log.Println("Starting HTTP service at 23456")
-	srv := &http.Server{
-		Handler: router,
-		Addr:    ":23456",
-		// Good practice: enforce timeouts for servers you create!
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
-	}
-
-	log.Fatal(srv.ListenAndServe())
+func startWebServer(router Routes, port string) {
+	e := echo.New()
+	e = buildRoutes(routes, e)
+	log.Println("Starting HTTP service at " + port)
+	e.Logger.Fatal(e.Start(":" + port))
 }

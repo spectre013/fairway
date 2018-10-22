@@ -73,7 +73,6 @@ func Register(config EurekaConfig) {
 		ContentType: "application/json; charset=utf-8",
 		Body:        toJson(reg),
 	}
-	fmt.Println(registerAction)
 
 	var result bool
 	for {
