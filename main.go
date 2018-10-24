@@ -1,6 +1,7 @@
 package goeureka
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -51,6 +52,27 @@ func handleSigterm(config EurekaConfig) {
 		Deregister(config)
 		os.Exit(1)
 	}()
+}
+
+func buildRoutes(routes Routes, e *echo.Echo) *echo.Echo {
+	for _, route := range routes {
+		e.Add(route.Method, route.Pattern, route.HandlerFunc)
+	}
+	return e
+}
+
+func combineRoutes(routes Routes, eurekaRouts Routes) Routes {
+
+	for _, route := range eurekaRouts {
+		routes = append(routes, route)
+	}
+	return routes
+}
+
+func printRoutes(e *echo.Echo) {
+	for _, route := range e.Routes() {
+		log.Println(fmt.Sprintf("Mapped (%s) with method (%s) to %s", route.Path, route.Method, route.Name))
+	}
 }
 
 func startWebServer(router Routes, port string) {
