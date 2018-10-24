@@ -6,7 +6,7 @@ There are two ways to implement goeureka, one as a rest service and as a stand a
 
 
 
-## Rest service implimentation
+## Rest service implementation
 ```golang
 package main
 
@@ -70,7 +70,7 @@ func Index(c echo.Context) error {
 
 ```
 
-## Service implimentation
+## Service implementation
 ```golang
 package main
 
