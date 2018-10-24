@@ -54,14 +54,7 @@ func handleSigterm(config EurekaConfig) {
 	}()
 }
 
-func buildRoutes(routes Routes, e *echo.Echo) *echo.Echo {
-	for _, route := range routes {
-		e.Add(route.Method, route.Pattern, route.HandlerFunc)
-	}
-	return e
-}
-
-func combineRoutes(routes Routes, eurekaRouts Routes) Routes {
+func CombineRoutes(routes Routes, eurekaRouts Routes) Routes {
 
 	for _, route := range eurekaRouts {
 		routes = append(routes, route)
@@ -69,7 +62,7 @@ func combineRoutes(routes Routes, eurekaRouts Routes) Routes {
 	return routes
 }
 
-func printRoutes(e *echo.Echo) {
+func PrintRoutes(e *echo.Echo) {
 	for _, route := range e.Routes() {
 		log.Println(fmt.Sprintf("Mapped (%s) with method (%s) to %s", route.Path, route.Method, route.Name))
 	}
@@ -77,7 +70,7 @@ func printRoutes(e *echo.Echo) {
 
 func startWebServer(router Routes, port string) {
 	e := echo.New()
-	e = buildRoutes(routes, e)
+	e = BuildRoutes(routes, e)
 	log.Println("Starting HTTP service at " + port)
 	e.Logger.Fatal(e.Start(":" + port))
 }

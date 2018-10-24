@@ -26,7 +26,7 @@ var routes = Routes{
 	},
 }
 
-func buildRoutes(routes Routes, e *echo.Echo) *echo.Echo {
+func BuildRoutes(routes Routes, e *echo.Echo) *echo.Echo {
 	for _, route := range routes {
 		e.Add(route.Method, route.Pattern, route.HandlerFunc)
 	}
