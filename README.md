@@ -1,4 +1,4 @@
-#Go Eureka
+# Go Eureka
 
 a simple Eureka client for go that will register your service with eureka and send hearbeats as well as deregister on shutdown or panic. 
 
@@ -6,7 +6,7 @@ There are two ways to implement goeureka, one as a rest service and as a stand a
 
 
 
-##Rest service implimentation
+## Rest service implimentation
 ```golang
 package main
 
@@ -70,7 +70,7 @@ func Index(c echo.Context) error {
 
 ```
 
-##Service implimentation
+## Service implimentation
 ```golang
 package main
 
