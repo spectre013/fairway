@@ -15,18 +15,31 @@ var routes = Routes{
 	Route{
 		"Info",
 		"GET",
-		"/info",
+		"/actuator/info",
 		Info,
 	},
 	Route{
 		"Health",
 		"POST",
-		"/health",
+		"/actuator/health",
 		Health,
+	},
+	Route{
+		"Env",
+		"GET",
+		"/actuator/env",
+		Env,
+	},
+	Route{
+		"Metrics",
+		"GET",
+		"/actuator/metrics",
+		Metrics,
 	},
 }
 
 func BuildRoutes(routes Routes, e *echo.Echo) *echo.Echo {
+	loadGitInfo()
 	for _, route := range routes {
 		e.Add(route.Method, route.Pattern, route.HandlerFunc)
 	}

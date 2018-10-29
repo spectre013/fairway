@@ -2,13 +2,14 @@ package goeureka
 
 import (
 	"fmt"
-	"log"
+	"github.com/labstack/echo/middleware"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 
 	"github.com/labstack/echo"
+	"github.com/labstack/gommon/log"
 )
 
 type EurekaClient struct {
@@ -64,13 +65,16 @@ func CombineRoutes(routes Routes, eurekaRouts Routes) Routes {
 
 func PrintRoutes(e *echo.Echo) {
 	for _, route := range e.Routes() {
-		log.Println(fmt.Sprintf("Mapped (%s) with method (%s) to %s", route.Path, route.Method, route.Name))
+		fmt.Println(fmt.Sprintf("Mapped (%s) with method (%s) to %s", route.Path, route.Method, route.Name))
 	}
 }
 
 func startWebServer(router Routes, port string) {
 	e := echo.New()
+	e.Use(middleware.Logger())
+	e.Logger.SetLevel(log.INFO)
+
 	e = BuildRoutes(routes, e)
-	log.Println("Starting HTTP service at " + port)
+	//log.Println("Starting HTTP service at " + port)
 	e.Logger.Fatal(e.Start(":" + port))
 }

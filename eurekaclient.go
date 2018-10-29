@@ -60,8 +60,8 @@ func Register(config EurekaConfig) {
 		Port:           port,
 		SecurePort:     secureport,
 		HomePageUrl:    fmt.Sprintf("http://%s:%s/", config.IpAddress, config.Port),
-		StatusPageUrl:  fmt.Sprintf("http://%s:%s/info", config.IpAddress, config.Port),
-		HealthCheckUrl: fmt.Sprintf("http://%s:%s/health", config.IpAddress, config.Port),
+		StatusPageUrl:  fmt.Sprintf("http://%s:%s/actuator/info", config.IpAddress, config.Port),
+		HealthCheckUrl: fmt.Sprintf("http://%s:%s/actuator/health", config.IpAddress, config.Port),
 		DataCenterInfo: dataCenter}
 
 	reg.Instance = instance
