@@ -19,6 +19,11 @@ func DoHttpRequest(httpAction HttpAction) bool {
 
 	client := &http.Client{Transport: DefaultTransport, Timeout: time.Duration(10 * time.Second)}
 	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("HTTP request failed: %s", err)
+		log.Println(resp)
+		return false
+	}
 	if resp != nil {
 		defer resp.Body.Close()
 		body := getBody(resp)
