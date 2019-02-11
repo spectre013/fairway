@@ -2,6 +2,7 @@ package goeureka
 
 import (
 	"bufio"
+	"encoding/json"
 	"log"
 	"os"
 	"os/exec"
@@ -41,13 +42,13 @@ func loadGitInfo() {
 
 }
 
-func info() *infoJson {
-	//infoJson := generateInfoData()
-	//b, err := json.Marshal(infoJson)
-	//if err != nil {
-	//	return err.Error()
-	//}
-	return generateInfoData()
+func info() ([]byte, error) {
+	infoJson := generateInfoData()
+	b, err := json.Marshal(infoJson)
+	if err != nil {
+		return nil, err
+	}
+	return b, nil
 }
 
 func generateInfoData() *infoJson {

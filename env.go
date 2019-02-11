@@ -1,11 +1,12 @@
 package goeureka
 
 import (
+	"encoding/json"
 	"os"
 	"strings"
 )
 
-func env() *envObject {
+func env() ([]byte, error) {
 	env := new(envObject)
 	env.SystemEnvironment = make(map[string]string)
 
@@ -14,7 +15,11 @@ func env() *envObject {
 		env.SystemEnvironment[pair[0]] = pair[1]
 	}
 
-	return env
+	b, err := json.Marshal(env)
+	if err != nil {
+		return nil, err
+	}
+	return b, nil
 }
 
 type envObject struct {

@@ -1,25 +1,44 @@
 package goeureka
 
 import (
+	"encoding/json"
 	"net/http"
-
-	"github.com/labstack/echo"
 )
 
 
-func Info(c echo.Context) error {
-	return c.JSON(http.StatusOK, info())
+func Info(w http.ResponseWriter, r *http.Request) {
+	json, err := info()
+	if err != nil {
+		http.Error(w,"Internal Server Error", http.StatusInternalServerError)
+	}
+	w.Write(json)
 }
 
-func Health(c echo.Context) error {
-	health := map[string]string{"status": "UP"}
-	return c.JSON(http.StatusOK, health)
+func Health(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		health := map[string]string{"status": "UP"}
+		json, err := json.Marshal(health)
+		if err != nil {
+			http.Error(w,"Internal Server Error", http.StatusInternalServerError)
+		}
+		w.Write(json)
+	} else {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+	}
 }
 
-func Env(c echo.Context) error {
-	return c.JSON(http.StatusOK, env())
+func Env(w http.ResponseWriter, r *http.Request) {
+	json, err := env()
+	if err != nil {
+		http.Error(w,"Internal Server Error", http.StatusInternalServerError)
+	}
+	w.Write(json)
 }
 
-func Metrics(c echo.Context) error {
-	return c.JSON(http.StatusOK, metrics())
+func Metrics(w http.ResponseWriter, r *http.Request) {
+	json, err := metrics()
+	if err != nil {
+		http.Error(w,"Internal Server Error", http.StatusInternalServerError)
+	}
+	w.Write(json)
 }

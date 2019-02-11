@@ -2,14 +2,15 @@ package goeureka
 
 import (
 	"fmt"
-	"github.com/labstack/echo/middleware"
+	"log"
+	"net"
+	"net/http"
 	"os"
 	"os/signal"
+	"reflect"
+	"strings"
 	"sync"
 	"syscall"
-
-	"github.com/labstack/echo"
-	"github.com/labstack/gommon/log"
 )
 
 type EurekaClient struct {
@@ -29,6 +30,9 @@ type EurekaConfig struct {
 }
 
 func Init(config EurekaConfig) EurekaClient {
+
+	config.IpAddress = GetOutboundIP().String()
+	config.VipAddress = strings.ToUpper(config.Name)
 	handleSigterm(config) // Graceful shutdown on Ctrl+C or kill
 	routes := routes
 	go Register(config) // Performs Eureka registration
@@ -42,6 +46,18 @@ func Init(config EurekaConfig) EurekaClient {
 
 	var e Eureka
 	return EurekaClient{Client: e, Routes: routes}
+}
+
+func GetOutboundIP() net.IP {
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer conn.Close()
+
+	localAddr := conn.LocalAddr().(*net.UDPAddr)
+
+	return localAddr.IP
 }
 
 func handleSigterm(config EurekaConfig) {
@@ -63,18 +79,25 @@ func CombineRoutes(routes Routes, eurekaRouts Routes) Routes {
 	return routes
 }
 
-func PrintRoutes(e *echo.Echo) {
-	for _, route := range e.Routes() {
-		fmt.Println(fmt.Sprintf("Mapped (%s) with method (%s) to %s", route.Path, route.Method, route.Name))
-	}
+func PrintRoutes() {
+	//for _, route := range e{
+	//	fmt.Println(fmt.Sprintf("Mapped (%s) with method (%s) to %s", route.Path, route.Method, route.Name))
+	//}
+	httpMux := reflect.ValueOf(http.DefaultServeMux).Elem()
+	finList := httpMux.FieldByIndex([]int{1})
+	fmt.Println(finList)
+}
+
+func Log(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("%s %s %s", r.RemoteAddr, r.Method, r.URL)
+		handler.ServeHTTP(w, r)
+	})
 }
 
 func startWebServer(router Routes, port string) {
-	e := echo.New()
-	e.Use(middleware.Logger())
-	e.Logger.SetLevel(log.INFO)
-
+	e := http.NewServeMux()
 	e = BuildRoutes(routes, e)
-	//log.Println("Starting HTTP service at " + port)
-	e.Logger.Fatal(e.Start(":" + port))
+	// //log.Println("Starting HTTP service at " + port)
+	// e.Logger.Fatal(e.Start(":" + port))
 }

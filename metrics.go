@@ -1,12 +1,16 @@
 package goeureka
 
 import (
+	"encoding/json"
 	"runtime"
 )
 
-func metrics() runtime.MemStats {
-
-	return refillMetricsMap()
+func metrics() ([]byte, error) {
+	b, err := json.Marshal(refillMetricsMap())
+	if err != nil {
+		return nil, err
+	}
+	return b, nil
 }
 
 func refillMetricsMap() runtime.MemStats {

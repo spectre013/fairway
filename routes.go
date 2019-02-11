@@ -1,12 +1,13 @@
 package goeureka
 
-import "github.com/labstack/echo"
+import "net/http"
 
 type Route struct {
 	Name        string
 	Method      string
 	Pattern     string
-	HandlerFunc echo.HandlerFunc
+	HandlerFunc http.HandlerFunc
+	Handler http.Handler
 }
 
 type Routes []Route
@@ -16,32 +17,41 @@ var routes = Routes{
 		"Info",
 		"GET",
 		"/actuator/info",
-		Info,
+		nil,
+		http.HandlerFunc(Info),
 	},
 	Route{
 		"Health",
 		"POST",
 		"/actuator/health",
-		Health,
+		nil,
+		http.HandlerFunc(Health),
 	},
 	Route{
 		"Env",
 		"GET",
 		"/actuator/env",
-		Env,
+		nil,
+		http.HandlerFunc(Env),
 	},
 	Route{
 		"Metrics",
 		"GET",
 		"/actuator/metrics",
-		Metrics,
+		nil,
+		http.HandlerFunc(Metrics),
 	},
 }
 
-func BuildRoutes(routes Routes, e *echo.Echo) *echo.Echo {
-	loadGitInfo()
+func BuildRoutes(routes Routes, e *http.ServeMux) *http.ServeMux {
+	//loadGitInfo()
 	for _, route := range routes {
-		e.Add(route.Method, route.Pattern, route.HandlerFunc)
+		//e.Add(route.Method, route.Pattern, route.HandlerFunc)
+		if route.HandlerFunc != nil {
+			e.Handle(route.Pattern,Log(route.HandlerFunc))
+		} else {
+			e.Handle(route.Pattern,Log(route.Handler))
+		}
 	}
 	return e
 }
