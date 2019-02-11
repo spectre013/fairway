@@ -3,7 +3,6 @@ package goeureka
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"time"
 )
 
@@ -71,16 +70,14 @@ func Register(config EurekaConfig) {
 	registerAction := HttpAction{
 		Url:         config.Url + "/apps/" + config.Name,
 		Method:      "POST",
-		ContentType: "application/json; charset=utf-8",
+		ContentType: "application/json",
 		Body:        toJson(reg),
 	}
 
 	var result bool
 	for {
 		fmt.Println("Attempting to register with Eureka at ", config.Url)
-		fmt.Println(registerAction)
 		result = DoHttpRequest(registerAction)
-		log.Println(result)
 		if result {
 			go StartHeartbeat(config) // Performs Eureka heartbeating (async)
 			fmt.Println("Eureka registration successfull ... ")

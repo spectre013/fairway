@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/signal"
 	"reflect"
-	"strings"
 	"sync"
 	"syscall"
 )
@@ -32,7 +31,7 @@ type EurekaConfig struct {
 func Init(config EurekaConfig) EurekaClient {
 
 	config.IpAddress = GetOutboundIP().String()
-	config.VipAddress = strings.ToUpper(config.Name)
+	config.VipAddress = GetOutboundIP().String()
 	handleSigterm(config) // Graceful shutdown on Ctrl+C or kill
 	routes := routes
 	go Register(config) // Performs Eureka registration
