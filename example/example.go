@@ -18,7 +18,7 @@ func main() {
 
 	config := goeureka.EurekaConfig{
 		Name:        "tb-search-ui",
-		Url:         "http://eureka.default.10.2.4.205.xip.io/loc:8761/eureka",
+		Url:         "http://eureka.default.10.2.4.205.xip.io/eureka",
 		HostName:    "c00064.issinc.com",
 		Port:        "8900",
 		SecurePort:  "8943",

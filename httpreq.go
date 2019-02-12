@@ -18,12 +18,15 @@ func DoHttpRequest(httpAction HttpAction) bool {
 
 	client := &http.Client{Transport: DefaultTransport, Timeout: time.Duration(10 * time.Second)}
 	resp, err := client.Do(req)
-	logger.Debug("Response:", resp)
 	if err != nil {
 		logger.Error("HTTP request failed: %s", err)
-		logger.Error(resp)
+		if resp != nil {
+			logger.Error("Response: ", resp.StatusCode)
+			logger.Error(resp)
+		}
 		return false
 	}
+
 	if resp != nil {
 		defer resp.Body.Close()
 		body, err := getBody(resp)
@@ -32,8 +35,14 @@ func DoHttpRequest(httpAction HttpAction) bool {
 			logger.Error("Response body: ", body)
 			logger.Error("Response: ", resp.StatusCode)
 			return false
-		} else if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusNoContent {
+		}
+
+		if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusNoContent {
 			return true
+		} else {
+			logger.Error("Response body: ", body)
+			logger.Error("Response: ", resp.StatusCode)
+			return false
 		}
 	}
 	return false
