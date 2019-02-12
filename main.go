@@ -1,8 +1,7 @@
 package goeureka
 
 import (
-	"fmt"
-	"log"
+	"github.com/sirupsen/logrus"
 	"net"
 	"net/http"
 	"os"
@@ -28,7 +27,10 @@ type EurekaConfig struct {
 	RestService bool
 }
 
+var logger = logrus.New()
+
 func Init(config EurekaConfig) EurekaClient {
+	logger.Out = os.Stdout
 
 	config.IpAddress = GetOutboundIP().String()
 	config.VipAddress = GetOutboundIP().String()
@@ -50,7 +52,7 @@ func Init(config EurekaConfig) EurekaClient {
 func GetOutboundIP() net.IP {
 	conn, err := net.Dial("udp", "8.8.8.8:80")
 	if err != nil {
-		log.Fatal(err)
+		logger.Warn(err)
 	}
 	defer conn.Close()
 
@@ -71,7 +73,6 @@ func handleSigterm(config EurekaConfig) {
 }
 
 func CombineRoutes(routes Routes, eurekaRouts Routes) Routes {
-
 	for _, route := range eurekaRouts {
 		routes = append(routes, route)
 	}
@@ -79,24 +80,15 @@ func CombineRoutes(routes Routes, eurekaRouts Routes) Routes {
 }
 
 func PrintRoutes() {
-	//for _, route := range e{
-	//	fmt.Println(fmt.Sprintf("Mapped (%s) with method (%s) to %s", route.Path, route.Method, route.Name))
-	//}
 	httpMux := reflect.ValueOf(http.DefaultServeMux).Elem()
 	finList := httpMux.FieldByIndex([]int{1})
-	fmt.Println(finList)
+	logger.Info(finList)
 }
 
-func Log(handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("%s %s %s", r.RemoteAddr, r.Method, r.URL)
-		handler.ServeHTTP(w, r)
-	})
-}
-
-func startWebServer(router Routes, port string) {
-	e := http.NewServeMux()
-	e = BuildRoutes(routes, e)
-	// //log.Println("Starting HTTP service at " + port)
-	// e.Logger.Fatal(e.Start(":" + port))
+func startWebServer(routes Routes, port string) {
+	router := http.NewServeMux()
+	router = BuildRoutes(routes, router)
+	PrintRoutes();
+	logger.Info("Server is up and listening on ", port)
+	http.ListenAndServe(port, router)
 }

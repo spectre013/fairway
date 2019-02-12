@@ -3,7 +3,6 @@ package goeureka
 import (
 	"crypto/tls"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -20,17 +19,17 @@ func DoHttpRequest(httpAction HttpAction) bool {
 	client := &http.Client{Transport: DefaultTransport, Timeout: time.Duration(10 * time.Second)}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Printf("HTTP request failed: %s", err)
-		log.Println(resp)
+		logger.Error("HTTP request failed: %s", err)
+		logger.Error(resp)
 		return false
 	}
 	if resp != nil {
 		defer resp.Body.Close()
-		body := getBody(resp)
+		body, err := getBody(resp)
 		if err != nil {
-			log.Printf("HTTP request failed: %s", err)
-			log.Println("Response body: ", body)
-			log.Println("Response: ", resp.StatusCode)
+			logger.Printf("Error reading response body : %s", err)
+			logger.Error("Response body: ", body)
+			logger.Error("Response: ", resp.StatusCode)
 			return false
 		} else if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusNoContent {
 			return true
@@ -39,12 +38,13 @@ func DoHttpRequest(httpAction HttpAction) bool {
 	return false
 }
 
-func getBody(resp *http.Response) string {
+func getBody(resp *http.Response) (string, error) {
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Panicln("Unable to read response body")
+		logger.Error("Unable to read response body")
+		return "", err
 	}
-	return string(bodyBytes)
+	return string(bodyBytes), nil
 }
 
 func buildHttpRequest(httpAction HttpAction) *http.Request {
@@ -60,7 +60,7 @@ func buildHttpRequest(httpAction HttpAction) *http.Request {
 		req, err = http.NewRequest(httpAction.Method, httpAction.Url, nil)
 	}
 	if err != nil {
-		log.Fatal(err)
+		logger.Error(err)
 	}
 
 	// Add headers

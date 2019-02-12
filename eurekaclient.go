@@ -76,14 +76,14 @@ func Register(config EurekaConfig) {
 
 	var result bool
 	for {
-		fmt.Println("Attempting to register with Eureka at ", config.Url)
+		logger.Info("Attempting to register with Eureka at ", config.Url)
 		result = DoHttpRequest(registerAction)
 		if result {
 			go StartHeartbeat(config) // Performs Eureka heartbeating (async)
-			fmt.Println("Eureka registration successfull ... ")
+			logger.Info("Eureka registration successfull ... ")
 			break
 		} else {
-			fmt.Println("Eureka registration unsuccessfull or euraka is down will keep trying... ")
+			logger.Info("Eureka registration unsuccessfull or euraka is down will keep trying... ")
 			time.Sleep(time.Second * 5)
 		}
 	}
@@ -92,7 +92,7 @@ func Register(config EurekaConfig) {
 func toJson(r EurekaRegistration) string {
 	f, err := json.Marshal(r)
 	if err != nil {
-		fmt.Println("error:", err)
+		logger.Error("error:", err)
 	}
 	return string(f)
 }
@@ -113,12 +113,12 @@ func heartbeat(config EurekaConfig) {
 }
 
 func Deregister(config EurekaConfig) {
-	fmt.Println("Trying to deregister application...")
+	logger.Info("Trying to deregister application...")
 	// Deregister
 	deregisterAction := HttpAction{
 		Url:    config.Url + "/apps/" + config.Name + "/" + config.Name + ":" + instanceId,
 		Method: "DELETE",
 	}
 	DoHttpRequest(deregisterAction)
-	fmt.Println("Deregistered application, exiting.")
+	logger.Info("Deregistered application, exiting.")
 }

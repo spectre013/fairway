@@ -44,13 +44,12 @@ var routes = Routes{
 }
 
 func BuildRoutes(routes Routes, e *http.ServeMux) *http.ServeMux {
-	//loadGitInfo()
+	loadGitInfo()
 	for _, route := range routes {
-		//e.Add(route.Method, route.Pattern, route.HandlerFunc)
 		if route.HandlerFunc != nil {
-			e.Handle(route.Pattern,Log(route.HandlerFunc))
+			e.Handle(route.Pattern,Logger(route.HandlerFunc,route.Name))
 		} else {
-			e.Handle(route.Pattern,Log(route.Handler))
+			e.Handle(route.Pattern,Logger(route.Handler,route.Name))
 		}
 	}
 	return e
