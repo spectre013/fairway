@@ -26,7 +26,7 @@ func DoHttpRequest(httpAction HttpAction) bool {
 		}
 		return false
 	}
-
+	logger.Info("Eureka Response:", resp.StatusCode)
 	if resp != nil {
 		defer resp.Body.Close()
 		body, err := getBody(resp)
