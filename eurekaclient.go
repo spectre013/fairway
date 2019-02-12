@@ -107,7 +107,7 @@ func StartHeartbeat(config EurekaConfig) {
 
 func heartbeat(config EurekaConfig) {
 	heartbeatAction := HttpAction{
-		Url:    config.Url + "/apps/" + config.Name + "/" + instanceId,
+		Url:    config.Url + "/apps/" + config.Name + "/" + config.Name + ":" + instanceId,
 		Method: "PUT",
 	}
 	DoHttpRequest(heartbeatAction)
