@@ -18,6 +18,7 @@ func DoHttpRequest(httpAction HttpAction) bool {
 
 	client := &http.Client{Transport: DefaultTransport, Timeout: time.Duration(10 * time.Second)}
 	resp, err := client.Do(req)
+	logger.Debug("Response:", resp)
 	if err != nil {
 		logger.Error("HTTP request failed: %s", err)
 		logger.Error(resp)
