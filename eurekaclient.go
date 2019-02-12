@@ -3,6 +3,7 @@ package goeureka
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -53,7 +54,7 @@ func Register(config EurekaConfig) {
 	instance := Instance{
 		InstanceId:     config.Name + ":" + instanceId,
 		HostName:       config.HostName,
-		App:            config.Name,
+		App:            strings.ToUpper(config.Name),
 		IpAddr:         config.IpAddress,
 		VipAddress:     config.VipAddress,
 		Status:         "UP",
