@@ -3,6 +3,7 @@ package goeureka
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 )
@@ -45,6 +46,34 @@ var instanceId string
 var eurekaURL string
 
 func Register(config EurekaConfig) {
+	reg := CreateRegistration(config)
+	registerAction := CreateHTTPAction(config, reg)
+
+	var result bool
+	for {
+		logger.Info("Attempting to register with Eureka at ", config.Url)
+		result = DoHttpRequest(registerAction)
+		if result {
+			go startHeartbeat(config) // Performs Eureka heartbeating (async)
+			logger.Info("Eureka registration successfull ... ")
+			break
+		} else {
+			logger.Info("Eureka registration unsuccessfull or euraka is down will keep trying... ")
+			time.Sleep(time.Second * 5)
+		}
+	}
+}
+
+func CreateHTTPAction(config EurekaConfig, reg EurekaRegistration) HttpAction {
+	return HttpAction{
+		Url:         config.Url + "/apps/" + config.Name,
+		Method:      http.MethodPost,
+		ContentType: "application/json",
+		Body:        toJson(reg),
+	}
+}
+
+func CreateRegistration(config EurekaConfig) EurekaRegistration {
 	instanceId = GetUUID()
 
 	reg := EurekaRegistration{}
@@ -66,28 +95,7 @@ func Register(config EurekaConfig) {
 		DataCenterInfo: dataCenter}
 
 	reg.Instance = instance
-
-	// Register.
-	registerAction := HttpAction{
-		Url:         config.Url + "/apps/" + config.Name,
-		Method:      "POST",
-		ContentType: "application/json",
-		Body:        toJson(reg),
-	}
-
-	var result bool
-	for {
-		logger.Info("Attempting to register with Eureka at ", config.Url)
-		result = DoHttpRequest(registerAction)
-		if result {
-			go StartHeartbeat(config) // Performs Eureka heartbeating (async)
-			logger.Info("Eureka registration successfull ... ")
-			break
-		} else {
-			logger.Info("Eureka registration unsuccessfull or euraka is down will keep trying... ")
-			time.Sleep(time.Second * 5)
-		}
-	}
+	return reg
 }
 
 func toJson(r EurekaRegistration) string {
@@ -98,7 +106,7 @@ func toJson(r EurekaRegistration) string {
 	return string(f)
 }
 
-func StartHeartbeat(config EurekaConfig) {
+func startHeartbeat(config EurekaConfig) {
 	for {
 		time.Sleep(time.Second * 30)
 		heartbeat(config)
@@ -113,7 +121,7 @@ func heartbeat(config EurekaConfig) {
 	DoHttpRequest(heartbeatAction)
 }
 
-func Deregister(config EurekaConfig) {
+func deregister(config EurekaConfig) {
 	logger.Info("Trying to deregister application...")
 	// Deregister
 	deregisterAction := HttpAction{

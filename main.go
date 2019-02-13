@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"reflect"
 	"sync"
 	"syscall"
 )
@@ -33,8 +32,8 @@ func Init(config EurekaConfig) EurekaClient {
 	logger.Out = os.Stdout
 	logger.SetLevel(logrus.DebugLevel)
 
-	config.IpAddress = GetOutboundIP().String()
-	config.VipAddress = GetOutboundIP().String()
+	config.IpAddress = getOutboundIP().String()
+	config.VipAddress = getOutboundIP().String()
 	handleSigterm(config) // Graceful shutdown on Ctrl+C or kill
 	routes := routes
 	go Register(config) // Performs Eureka registration
@@ -50,7 +49,7 @@ func Init(config EurekaConfig) EurekaClient {
 	return EurekaClient{Client: e, Routes: routes}
 }
 
-func GetOutboundIP() net.IP {
+func getOutboundIP() net.IP {
 	conn, err := net.Dial("udp", "8.8.8.8:80")
 	if err != nil {
 		logger.Warn(err)
@@ -68,7 +67,7 @@ func handleSigterm(config EurekaConfig) {
 	signal.Notify(c, syscall.SIGTERM)
 	go func() {
 		<-c
-		Deregister(config)
+		deregister(config)
 		os.Exit(1)
 	}()
 }
@@ -80,16 +79,9 @@ func CombineRoutes(routes Routes, eurekaRouts Routes) Routes {
 	return routes
 }
 
-func PrintRoutes() {
-	httpMux := reflect.ValueOf(http.DefaultServeMux).Elem()
-	finList := httpMux.FieldByIndex([]int{1})
-	logger.Info(finList)
-}
-
 func startWebServer(routes Routes, port string) {
 	router := http.NewServeMux()
 	router = BuildRoutes(routes, router)
-	PrintRoutes();
 	logger.Info("Server is up and listening on ", port)
 	http.ListenAndServe(port, router)
 }

@@ -23,6 +23,6 @@ func env() ([]byte, error) {
 }
 
 type envObject struct {
-	Configuration map[string]interface{} `json:"configuration"`
-	SystemEnvironment map[string]string `json:"systemEnvironment"`
+	Configuration     map[string]interface{} `json:"configuration"`
+	SystemEnvironment map[string]string      `json:"systemEnvironment"`
 }

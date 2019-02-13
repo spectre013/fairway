@@ -5,11 +5,10 @@ import (
 	"net/http"
 )
 
-
 func Info(w http.ResponseWriter, r *http.Request) {
 	json, err := info()
 	if err != nil {
-		http.Error(w,"Internal Server Error", http.StatusInternalServerError)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 	w.Write(json)
 }
@@ -19,7 +18,7 @@ func Health(w http.ResponseWriter, r *http.Request) {
 		health := map[string]string{"status": "UP"}
 		json, err := json.Marshal(health)
 		if err != nil {
-			http.Error(w,"Internal Server Error", http.StatusInternalServerError)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		}
 		w.Write(json)
 	} else {
@@ -30,7 +29,7 @@ func Health(w http.ResponseWriter, r *http.Request) {
 func Env(w http.ResponseWriter, r *http.Request) {
 	json, err := env()
 	if err != nil {
-		http.Error(w,"Internal Server Error", http.StatusInternalServerError)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 	w.Write(json)
 }
@@ -38,7 +37,7 @@ func Env(w http.ResponseWriter, r *http.Request) {
 func Metrics(w http.ResponseWriter, r *http.Request) {
 	json, err := metrics()
 	if err != nil {
-		http.Error(w,"Internal Server Error", http.StatusInternalServerError)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 	w.Write(json)
 }

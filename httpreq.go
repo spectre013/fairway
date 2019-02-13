@@ -19,7 +19,7 @@ func DoHttpRequest(httpAction HttpAction) bool {
 	client := &http.Client{Transport: DefaultTransport, Timeout: time.Duration(10 * time.Second)}
 	resp, err := client.Do(req)
 	if err != nil {
-		logger.Error("HTTP request failed: %s", err)
+		logger.Error("HTTP request failed:", err)
 		if resp != nil {
 			logger.Error("Response: ", resp.StatusCode)
 			logger.Error(resp)
@@ -79,20 +79,4 @@ func buildHttpRequest(httpAction HttpAction) *http.Request {
 		req.Header.Add("Content-Type", httpAction.ContentType)
 	}
 	return req
-}
-
-/**
- * Trims leading and trailing byte r from string s
- */
-func trimChar(s string, r byte) string {
-	sz := len(s)
-
-	if sz > 0 && s[sz-1] == r {
-		s = s[:sz-1]
-	}
-	sz = len(s)
-	if sz > 0 && s[0] == r {
-		s = s[1:sz]
-	}
-	return s
 }

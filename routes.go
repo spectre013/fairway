@@ -7,7 +7,7 @@ type Route struct {
 	Method      string
 	Pattern     string
 	HandlerFunc http.HandlerFunc
-	Handler http.Handler
+	Handler     http.Handler
 }
 
 type Routes []Route
@@ -47,9 +47,9 @@ func BuildRoutes(routes Routes, e *http.ServeMux) *http.ServeMux {
 	loadGitInfo()
 	for _, route := range routes {
 		if route.HandlerFunc != nil {
-			e.Handle(route.Pattern,Logger(route.HandlerFunc,route.Name))
+			e.Handle(route.Pattern, Logger(route.HandlerFunc, route.Name))
 		} else {
-			e.Handle(route.Pattern,Logger(route.Handler,route.Name))
+			e.Handle(route.Pattern, Logger(route.Handler, route.Name))
 		}
 	}
 	return e
