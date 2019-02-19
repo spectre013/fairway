@@ -24,6 +24,7 @@ type EurekaConfig struct {
 	Port        string
 	SecurePort  string
 	RestService bool
+	PreferIP    bool
 }
 
 var logger = logrus.New()
@@ -34,6 +35,11 @@ func Init(config EurekaConfig) EurekaClient {
 
 	config.IpAddress = getOutboundIP().String()
 	config.VipAddress = getOutboundIP().String()
+
+	if config.PreferIP {
+		config.HostName = config.IpAddress
+	}
+
 	handleSigterm(config) // Graceful shutdown on Ctrl+C or kill
 	routes := routes
 	go Register(config) // Performs Eureka registration

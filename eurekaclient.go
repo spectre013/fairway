@@ -46,6 +46,7 @@ var instanceId string
 var eurekaURL string
 
 func Register(config EurekaConfig) {
+
 	reg := CreateRegistration(config)
 	registerAction := CreateHTTPAction(config, reg)
 

@@ -5,7 +5,9 @@ import (
 	"os"
 	"testing"
 )
+
 var BuildHttpRequest = buildHttpRequest
+
 func getConfig() EurekaConfig {
 	return EurekaConfig{
 		Name:        "test",

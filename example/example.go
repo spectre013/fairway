@@ -23,7 +23,10 @@ func main() {
 		Port:        "8900",
 		SecurePort:  "8943",
 		RestService: true,
+		PreferIP: true,
 	}
+
+
 
 	eureka := goeureka.Init(config)
 	eurekaRoutes := eureka.Routes
