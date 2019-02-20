@@ -50,6 +50,8 @@ func Register(config EurekaConfig) {
 	reg := CreateRegistration(config)
 	registerAction := CreateHTTPAction(config, reg)
 
+	logger.Debug(toJson(reg))
+
 	var result bool
 	for {
 		logger.Info("Attempting to register with Eureka at ", config.Url)
@@ -78,8 +80,8 @@ func CreateRegistration(config EurekaConfig) EurekaRegistration {
 	instanceId = GetUUID()
 
 	reg := EurekaRegistration{}
-	port := Port{PortNumber: ":" + config.Port, Enabled: true}
-	secureport := Port{PortNumber: ":" + config.SecurePort, Enabled: false}
+	port := Port{PortNumber: config.Port, Enabled: true}
+	secureport := Port{PortNumber: config.SecurePort, Enabled: false}
 	dataCenter := DataCenter{Class: "com.netflix.appinfo.MyDataCenterInfo", Name: "MyOwn"}
 	instance := Instance{
 		InstanceId:     config.Name + ":" + instanceId,

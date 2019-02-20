@@ -34,12 +34,12 @@ func Init(config EurekaConfig) EurekaClient {
 	logger.SetLevel(logrus.DebugLevel)
 
 	config.IpAddress = getOutboundIP().String()
-	config.VipAddress = getOutboundIP().String()
+	config.VipAddress = config.Name
 
 	if config.PreferIP {
 		config.HostName = config.IpAddress
 	}
-
+	logger.Printf("%v",config)
 	handleSigterm(config) // Graceful shutdown on Ctrl+C or kill
 	routes := routes
 	go Register(config) // Performs Eureka registration

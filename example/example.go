@@ -17,8 +17,8 @@ func main() {
 	flag.Parse()
 
 	config := goeureka.EurekaConfig{
-		Name:        "tb-search-ui",
-		Url:         "http://eureka.default.10.2.4.205.xip.io/eureka",
+		Name:        "tb-ui-search",
+		Url:         "http://eurekaserver:8761/eureka",
 		HostName:    "c00064.issinc.com",
 		Port:        "8900",
 		SecurePort:  "8943",
@@ -37,7 +37,7 @@ func main() {
 			Method:      "GET",
 			Pattern:     "/",
 			HandlerFunc: nil,
-			Handler:     http.FileServer(http.Dir("dist/search")),
+			Handler:     http.FileServer(http.Dir("/Users/brian.paulson/pa/tb/tb-ui/tb-search/dist/search")),
 		},
 	}
 
