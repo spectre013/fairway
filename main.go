@@ -69,8 +69,7 @@ func getOutboundIP() net.IP {
 
 func handleSigterm(config EurekaConfig) {
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	signal.Notify(c, syscall.SIGTERM)
+	signal.Notify(c, os.Interrupt,syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGHUP)
 	go func() {
 		<-c
 		deregister(config)
