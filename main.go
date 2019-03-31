@@ -1,13 +1,14 @@
 package goeureka
 
 import (
-	"github.com/sirupsen/logrus"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
+
+	"github.com/sirupsen/logrus"
 )
 
 type EurekaClient struct {
@@ -39,7 +40,7 @@ func Init(config EurekaConfig) EurekaClient {
 	if config.PreferIP {
 		config.HostName = config.IpAddress
 	}
-	logger.Printf("%v",config)
+	logger.Printf("%v", config)
 	handleSigterm(config) // Graceful shutdown on Ctrl+C or kill
 	routes := routes
 	go Register(config) // Performs Eureka registration
@@ -69,9 +70,10 @@ func getOutboundIP() net.IP {
 
 func handleSigterm(config EurekaConfig) {
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt,syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGHUP)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGHUP)
 	go func() {
 		<-c
+		logger.Info(c)
 		deregister(config)
 		os.Exit(1)
 	}()

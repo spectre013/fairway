@@ -57,9 +57,11 @@ func Register(config EurekaConfig) {
 		logger.Info("Attempting to register with Eureka at ", config.Url)
 		result = DoHttpRequest(registerAction)
 		if result {
-			go startHeartbeat(config) // Performs Eureka heartbeating (async)
 			logger.Info("Eureka registration successfull ... ")
-			break
+			heartbeatStatus := make(chan bool)
+			go func() { heartbeatStatus <- startHeartbeat(config) }() // Performs Eureka heartbeating (async)
+			status := <-heartbeatStatus
+			logger.Warn("Heartbeat request failed trying to reregister: heartbeat status -> ", status)
 		} else {
 			logger.Info("Eureka registration unsuccessfull or euraka is down will keep trying... ")
 			time.Sleep(time.Second * 5)
@@ -109,19 +111,24 @@ func toJson(r EurekaRegistration) string {
 	return string(f)
 }
 
-func startHeartbeat(config EurekaConfig) {
+func startHeartbeat(config EurekaConfig) bool {
 	for {
 		time.Sleep(time.Second * 30)
-		heartbeat(config)
+		status := heartbeat(config)
+		if status == false {
+			break
+		}
 	}
+	return false
 }
 
-func heartbeat(config EurekaConfig) {
+func heartbeat(config EurekaConfig) bool {
 	heartbeatAction := HttpAction{
 		Url:    config.Url + "/apps/" + config.Name + "/" + config.Name + ":" + instanceId,
 		Method: "PUT",
 	}
-	DoHttpRequest(heartbeatAction)
+	return DoHttpRequest(heartbeatAction)
+
 }
 
 func deregister(config EurekaConfig) {

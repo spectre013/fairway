@@ -1,0 +1,6 @@
+conf:
+  name: tb-ui-search
+  servedir: /data/tb-search/app
+  port: 8003
+  secureport: 8943
+  eurekahost: http://docker.for.mac.localhost:8761/eureka

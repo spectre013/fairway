@@ -2,10 +2,11 @@ package main
 
 import (
 	"flag"
-	"github.com/spectre013/goeureka"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/spectre013/goeureka"
 )
 
 var (
@@ -18,15 +19,13 @@ func main() {
 
 	config := goeureka.EurekaConfig{
 		Name:        "tb-ui-search",
-		Url:         "http://eurekaserver:8761/eureka",
+		Url:         "http://docker.for.mac.localhost:8761/eureka",
 		HostName:    "c00064.issinc.com",
 		Port:        "8900",
 		SecurePort:  "8943",
 		RestService: true,
-		PreferIP: true,
+		PreferIP:    true,
 	}
-
-
 
 	eureka := goeureka.Init(config)
 	eurekaRoutes := eureka.Routes
