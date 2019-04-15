@@ -1,6 +1,7 @@
 package goeureka
 
 import (
+	"fmt"
 	"net"
 	"net/http"
 	"os"
@@ -31,8 +32,9 @@ type EurekaConfig struct {
 var logger = logrus.New()
 
 func Init(config EurekaConfig) EurekaClient {
+
 	logger.Out = os.Stdout
-	logger.SetLevel(logrus.DebugLevel)
+	logger.SetLevel(logrus.InfoLevel)
 
 	config.IpAddress = getOutboundIP().String()
 	config.VipAddress = config.Name
@@ -40,6 +42,13 @@ func Init(config EurekaConfig) EurekaClient {
 	if config.PreferIP {
 		config.HostName = config.IpAddress
 	}
+
+	fmt.Println("Starting up ", config.Name)
+	fmt.Println("########################################################")
+	fmt.Println()
+	fmt.Println()
+
+
 	logger.Printf("%v", config)
 	handleSigterm(config) // Graceful shutdown on Ctrl+C or kill
 	routes := routes

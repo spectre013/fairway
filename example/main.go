@@ -18,8 +18,8 @@ func main() {
 	flag.Parse()
 
 	config := goeureka.EurekaConfig{
-		Name:        "tb-ui-search",
-		Url:         "http://docker.for.mac.localhost:8761/eureka",
+		Name:        "eureka-test",
+		Url:         "http://eurekaserver:8761/eureka",
 		HostName:    "c00064.issinc.com",
 		Port:        "8900",
 		SecurePort:  "8943",
@@ -35,8 +35,8 @@ func main() {
 			Name:        "Index",
 			Method:      "GET",
 			Pattern:     "/",
-			HandlerFunc: nil,
-			Handler:     http.FileServer(http.Dir("/Users/brian.paulson/pa/tb/tb-ui/tb-search/dist/search")),
+			HandlerFunc: index,
+			Handler:     nil, //http.FileServer(http.Dir("/Users/brian.paulson/pa/tb/tb-ui/tb-search/dist/search")),
 		},
 	}
 
@@ -47,13 +47,16 @@ func main() {
 
 	router := http.NewServeMux()
 
-	//fs := http.FileServer(http.Dir("dist/search"))
-	//http.Handle("/", Log(fs))
 
 	router = goeureka.BuildRoutes(routes, router)
 
 	log.Println("Server is up and listening on ", listenAddr)
 	http.ListenAndServe(listenAddr, router)
+}
+
+
+func index(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Hello World!"))
 }
 
 func Log(handler http.Handler) http.Handler {
