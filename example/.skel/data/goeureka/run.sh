@@ -1,3 +1,3 @@
 echo "Running static"
-cd /data/tb-search/bin
+cd /data/goeureka/bin
 exec ./static
