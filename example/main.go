@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/spectre013/goeureka"
+	"github.com/spectre013/fairway"
 )
 
 var (
@@ -17,7 +17,7 @@ func main() {
 	flag.StringVar(&listenAddr, "listen-addr", ":8900", "server listen address")
 	flag.Parse()
 
-	config := goeureka.EurekaConfig{
+	config := fairway.EurekaConfig{
 		Name:        "eureka-test",
 		Url:         "http://eurekaserver:8761/eureka",
 		HostName:    "c00064.issinc.com",
@@ -27,11 +27,11 @@ func main() {
 		PreferIP:    true,
 	}
 
-	eureka := goeureka.Init(config)
+	eureka := fairway.Init(config)
 	eurekaRoutes := eureka.Routes
 
-	var routes = goeureka.Routes{
-		goeureka.Route{
+	var routes = fairway.Routes{
+		fairway.Route{
 			Name:        "Index",
 			Method:      "GET",
 			Pattern:     "/",
@@ -40,7 +40,7 @@ func main() {
 		},
 	}
 
-	routes = goeureka.CombineRoutes(routes, eurekaRoutes)
+	routes = fairway.CombineRoutes(routes, eurekaRoutes)
 
 	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
 	logger.Printf("Server is starting...")
@@ -48,7 +48,7 @@ func main() {
 	router := http.NewServeMux()
 
 
-	router = goeureka.BuildRoutes(routes, router)
+	router = fairway.BuildRoutes(routes, router)
 
 	log.Println("Server is up and listening on ", listenAddr)
 	http.ListenAndServe(listenAddr, router)

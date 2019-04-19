@@ -2,7 +2,7 @@
 
 a simple Eureka client for go that will register your service with eureka and send hearbeats as well as deregister on shutdown or panic. 
 
-There are two ways to implement goeureka, one as a rest service and as a stand alone service. 
+There are two ways to implement fairway, one as a rest service and as a stand alone service. 
 
 
 
@@ -17,7 +17,7 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo"
-	"github.com/spectre013/goeureka"
+	"github.com/spectre013/fairway"
 )
 
 func main() {
@@ -30,7 +30,7 @@ func main() {
 	secure_port := os.Getenv("SECURE_PORT")
 	rest_service, _ := strconv.ParseBool(os.Getenv("REST_SERVICE"))
 
-	config := goeureka.EurekaConfig{
+	config := fairway.EurekaConfig{
 		Name:        service_name,
 		Url:         eureka_host,
 		VipAddress:  vip_address,
@@ -41,11 +41,11 @@ func main() {
 		RestService: rest_service,
 	}
 
-	eureka := goeureka.Init(config)
+	eureka := fairway.Init(config)
 	eurekaRoutes := eureka.Routes
 
-	var routes = goeureka.Routes{
-		goeureka.Route{
+	var routes = fairway.Routes{
+		fairway.Route{
 			Name:        "Index",
 			Method:      "GET",
 			Pattern:     "/",
@@ -53,14 +53,14 @@ func main() {
 		},
 	}
 	e := echo.New()
-	routes = goeureka.CombineRoutes(routes, eurekaRoutes)
-	e = goeureka.BuildRoutes(routes, e)
+	routes = fairway.CombineRoutes(routes, eurekaRoutes)
+	e = fairway.BuildRoutes(routes, e)
 	startServer(port, e)
 }
 
 func startServer(port string, e *echo.Echo) {
 	log.Println("Starting HTTP service at " + port)
-	goeureka.PrintRoutes(e)
+	fairway.PrintRoutes(e)
 	e.Logger.Fatal(e.Start(":" + port))
 }
 
@@ -79,7 +79,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/spectre013/goeureka"
+	"github.com/spectre013/fairway"
 )
 
 func main() {
@@ -92,7 +92,7 @@ func main() {
 	secure_port := os.Getenv("SECURE_PORT")
 	rest_service, _ := strconv.ParseBool(os.Getenv("REST_SERVICE"))
 
-	config := goeureka.EurekaConfig{
+	config := fairway.EurekaConfig{
 		Name:        service_name,
 		Url:         eureka_host,
 		VipAddress:  vip_address,
@@ -103,7 +103,7 @@ func main() {
 		RestService: rest_service,
 	}
 
-	go goeureka.Init(config)
+	go fairway.Init(config)
 
 	dosomething()
 

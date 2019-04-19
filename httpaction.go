@@ -1,4 +1,4 @@
-package goeureka
+package fairway
 
 type HttpAction struct {
 	Method      string `yaml:"method"`

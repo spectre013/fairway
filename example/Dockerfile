@@ -28,5 +28,5 @@ FROM tb-common-java as release
 COPY .skel /
 COPY .skel /skel
 
-COPY --from=builder /go/bin/static /data/goeureka/bin/static
+COPY --from=builder /go/bin/static /data/fairway/bin/static
 CMD [ "supervisord", "-n" ]
