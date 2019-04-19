@@ -1,6 +1,6 @@
 conf:
-  name: goeureka
-  servedir: /data/goeureka/app
+  name: fairway
+  servedir: /data/fairway/app
   port: 8001
   secureport: 8943
   eurekahost: http://docker.for.mac.localhost:8761/eureka

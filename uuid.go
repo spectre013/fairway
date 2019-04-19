@@ -1,4 +1,4 @@
-package goeureka
+package fairway
 
 import "github.com/twinj/uuid"
 

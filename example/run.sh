@@ -1,2 +1,2 @@
-docker rm   goeureka-test
-docker run -p 8900:8900 --name goeureka-test goeureka-test:latest 
+docker rm   fairway-test
+docker run -p 8900:8900 --name fairway-test fairway-test:latest

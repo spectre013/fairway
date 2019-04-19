@@ -1,4 +1,4 @@
-module github.com/spectre013/goeureka
+module github.com/spectre013/fairway
 
 require (
 	github.com/myesui/uuid v1.0.0 // indirect

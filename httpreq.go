@@ -1,4 +1,4 @@
-package goeureka
+package fairway
 
 import (
 	"crypto/tls"
