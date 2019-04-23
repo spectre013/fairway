@@ -34,7 +34,7 @@ var logger = logrus.New()
 func Init(config EurekaConfig) EurekaClient {
 
 	logger.Out = os.Stdout
-	logger.SetLevel(logrus.InfoLevel)
+	logger.SetLevel(logrus.DebugLevel)
 
 	config.IpAddress = getOutboundIP().String()
 	config.VipAddress = config.Name

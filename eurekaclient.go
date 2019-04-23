@@ -52,7 +52,7 @@ func Register(config EurekaConfig) {
 	reg := CreateRegistration(config)
 	registerAction := CreateHTTPAction(config, reg)
 
-	logger.Debug(toJson(reg))
+	logger.Debug(string(toJson(reg)))
 
 	var result bool
 	for {

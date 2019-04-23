@@ -1,10 +1,12 @@
 package fairway
 
 import (
+	"errors"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/process"
 	"os"
 	"runtime"
+	"strings"
 	"time"
 )
 
@@ -36,7 +38,7 @@ var names = []string{
 var methods = map[string]func() []Measurement{
 	"process.uptime":            uptime,
 	"jvm.threads.states":        processsThreads,
-	"process.start.time":        startSinceStart,
+	"process.start.time":        sinceStart,
 	"jvm.memory.used":           memoryUsed,
 	"jvm.gc.max.data.size":      jvmGC,
 	"jvm.gc.memory.promoted":    jvmGC,
@@ -77,19 +79,36 @@ type Tag struct {
 	Values []string `json:"values"`
 }
 
-func metrics(metric string) ([]byte, error) {
+func metrics(metric string,query map[string][]string) ([]byte, error) {
 	MAXGC = 0
 	runtime.ReadMemStats(&mem)
 	p = process.Process{Pid:int32(os.Getpid())}
 	var m Metric
 	if metric != "" {
-		m = createMetric(metric, metricValues[metric])
-		m.Measurement = runMetric(methods[metric])
+		if function, ok := methods[metric]; ok {
+			logger.Info("Running: ", metric, "()")
+			m = createMetric(metric, metricValues[metric])
+			m.Measurement = runMetric(function)
+			m.AvailableTags = getTags(query)
+
+		} else {
+			return nil, errors.New("method not found")
+		}
 	} else {
 		return toJson(map[string][]string{"names": names}), nil
 	}
 
 	return toJson(m), nil
+}
+
+func getTags(query map[string][]string) []Tag {
+	t := make([]Tag, 0)
+	for _,a := range query["tags"] {
+		tgs := strings.Split(a,":")
+		tag := Tag{Tag:tgs[0],Values:[]string{tgs[1]}}
+		t = append(t, tag)
+	}
+	return t
 }
 
 func threads() []Measurement {
@@ -104,7 +123,7 @@ func uptime() []Measurement {
 	return createMeaturement(ms)
 }
 
-func startSinceStart() []Measurement {
+func sinceStart() []Measurement {
 	ms := makeMs()
 	ms = append(ms, map[string]interface{}{"value": "VALUE", "stat": startTime})
 	return createMeaturement(ms)
@@ -125,6 +144,10 @@ func jvmGC() []Measurement {
 func jvmGCPause() []Measurement {
 	//PauseTotalNs
 	pause := int64(mem.PauseTotalNs)
+	//Don't deplay GC Pause until it surpasses 100000 nanoseconds
+	if pause < 100000 {
+		pause = 0
+	}
 	val := time.Duration(pause)
 	ms := makeMs()
 	ms = append(ms, map[string]interface{}{"value": "COUNT", "stat": mem.NumGC})
@@ -135,8 +158,12 @@ func jvmGCPause() []Measurement {
 			MAXGC = val
 		}
 	}
+	if MAXGC < 100000 {
+		MAXGC = 0
+	}
+	maxtime := time.Duration(MAXGC)
 
-	ms = append(ms, map[string]interface{}{"value": "MAX", "stat": MAXGC})
+	ms = append(ms, map[string]interface{}{"value": "MAX", "stat": maxtime.Seconds()})
 
 	return createMeaturement(ms)
 }
@@ -171,7 +198,7 @@ func cpuUsage() []Measurement {
 	usage, _ := cpu.Percent(0, false)
 
 	ms := makeMs()
-	ms = append(ms, map[string]interface{}{"value": "VALUE", "stat": usage})
+	ms = append(ms, map[string]interface{}{"value": "VALUE", "stat": usage[0]})
 	return createMeaturement(ms)
 }
 

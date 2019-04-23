@@ -7,6 +7,7 @@ import (
 )
 
 type EnvData struct {
+	ActiveProfiles []string `json:"activeProfiles"`
 	Property Property `json:"property,omitempty"`
 	PropertySources []Sources `json:"propertySources"`
 
@@ -24,33 +25,32 @@ type Property struct {
 }
 
 func env(property string) ([]byte, error) {
-	env := EnvData{}
+	env := EnvData{ActiveProfiles:[]string{"go"}}
 	env.PropertySources = make([]Sources,0)
 	sysProps := getSystemProperties(property)
 	sysEnv := getSystemEnvironmentProperties(property)
 
 	if property != "" {
-		env.Property = getPropery(property,sysProps,sysEnv)
+		env.Property = getProperty(property,sysProps,sysEnv)
 	}
 
 	env.PropertySources = append(env.PropertySources,sysProps)
 	env.PropertySources = append(env.PropertySources,sysEnv)
-
 	return toJson(env), nil
 }
 
-func getPropery(prop string, props Sources, env Sources) Property {
-	property := Property{}
+func getProperty(prop string, props Sources, sysEnv Sources) Property {
+	p := Property{}
 	if val, ok := props.Property[prop]; ok {
-		property = val
-		property.Source = props.Name
+		p = val
+		p.Source = props.Name
 	}
 
-	if val, ok := env.Property[prop]; ok {
-		property.Source = props.Name
-		property = val
+	if val, ok := sysEnv.Property[prop]; ok {
+		p.Source = props.Name
+		p = val
 	}
-	return property
+	return p
 }
 
 func getSystemEnvironmentProperties(prop string) Sources {
@@ -58,10 +58,13 @@ func getSystemEnvironmentProperties(prop string) Sources {
 	source.Name = "systemEnvironment"
 	p := map[string]Property{}
 	for _, e := range os.Environ() {
-		env := strings.Split(e, "=")
-		if !strings.Contains(env[0],"PASSWORD") {
-			p[env[0]] = Property{Value: env[1],
-				Origin: "System Environment Property \"" + env[0] + "\"",
+		e := strings.Split(e, "=")
+		if strings.HasPrefix(e[0], "_") {
+			continue
+		}
+		if !strings.Contains(e[0],"PASSWORD") {
+			p[strings.ToUpper(e[0])] = Property{Value: e[1],
+				Origin: "System Environment Property \"" + e[0] + "\"",
 			}
 		}
 	}

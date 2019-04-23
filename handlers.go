@@ -41,7 +41,7 @@ func Metrics(w http.ResponseWriter, r *http.Request) {
 	if len(path) > 3 {
 		metric = path[3]
 	}
-	json, err := metrics(metric)
+	json, err := metrics(metric, r.URL.Query())
 	writeResponse(json, err, w)
 }
 
@@ -50,5 +50,6 @@ func writeResponse(data []byte, err error, w http.ResponseWriter) {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 	w.Header().Set("Content-Type","application/vnd.spring-boot.actuator.v2+json;charset=UTF-8")
+
 	w.Write(data)
 }
