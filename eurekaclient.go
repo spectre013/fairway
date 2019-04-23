@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+var startTime time.Time
+
 type Eureka interface {
 	Register()
 	StartHeartbeat()
@@ -46,7 +48,7 @@ var instanceId string
 var eurekaURL string
 
 func Register(config EurekaConfig) {
-
+	startTime = time.Now()
 	reg := CreateRegistration(config)
 	registerAction := CreateHTTPAction(config, reg)
 
@@ -74,7 +76,7 @@ func CreateHTTPAction(config EurekaConfig, reg EurekaRegistration) HttpAction {
 		Url:         config.Url + "/apps/" + config.Name,
 		Method:      http.MethodPost,
 		ContentType: "application/json",
-		Body:        toJson(reg),
+		Body:        string(toJson(reg)),
 	}
 }
 
@@ -103,12 +105,12 @@ func CreateRegistration(config EurekaConfig) EurekaRegistration {
 	return reg
 }
 
-func toJson(r EurekaRegistration) string {
+func toJson(r interface{}) []byte {
 	f, err := json.Marshal(r)
 	if err != nil {
 		logger.Error("error:", err)
 	}
-	return string(f)
+	return f
 }
 
 func startHeartbeat(config EurekaConfig) bool {
