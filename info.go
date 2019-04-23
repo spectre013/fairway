@@ -2,7 +2,6 @@ package fairway
 
 import (
 	"bufio"
-	"encoding/json"
 	"os"
 	"os/exec"
 	"strings"
@@ -42,11 +41,7 @@ func loadGitInfo() {
 
 func info() ([]byte, error) {
 	infoJson := generateInfoData()
-	b, err := json.Marshal(infoJson)
-	if err != nil {
-		return nil, err
-	}
-	return b, nil
+	return toJson(infoJson), nil
 }
 
 func generateInfoData() *infoJson {

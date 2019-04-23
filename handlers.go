@@ -1,43 +1,55 @@
 package fairway
 
 import (
-	"encoding/json"
 	"net/http"
+	"strings"
 )
+
+func Error(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "Error Route not found", http.StatusNotFound)
+}
 
 func Info(w http.ResponseWriter, r *http.Request) {
 	json, err := info()
-	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	}
-	w.Write(json)
+	writeResponse(json, err, w)
 }
 
+func Actuator(w http.ResponseWriter, r *http.Request) {
+	actuator, err := acuator(r.Host)
+	writeResponse(actuator, err, w)
+}
+
+
 func Health(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
-		health := map[string]string{"status": "UP"}
-		json, err := json.Marshal(health)
-		if err != nil {
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		}
-		w.Write(json)
-	} else {
-		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
-	}
+	health, err := health()
+	writeResponse(health, err, w)
 }
 
 func Env(w http.ResponseWriter, r *http.Request) {
-	json, err := env()
-	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	path := strings.Split(r.URL.Path,"/")
+	prop := ""
+	if len(path) > 3 {
+		prop = path[3]
 	}
-	w.Write(json)
+	json, err := env(prop)
+	writeResponse(json, err, w)
 }
 
 func Metrics(w http.ResponseWriter, r *http.Request) {
-	json, err := metrics()
+	path := strings.Split(r.URL.Path,"/")
+	metric := ""
+	if len(path) > 3 {
+		metric = path[3]
+	}
+	json, err := metrics(metric, r.URL.Query())
+	writeResponse(json, err, w)
+}
+
+func writeResponse(data []byte, err error, w http.ResponseWriter) {
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
-	w.Write(json)
+	w.Header().Set("Content-Type","application/vnd.spring-boot.actuator.v2+json;charset=UTF-8")
+
+	w.Write(data)
 }

@@ -34,7 +34,7 @@ var logger = logrus.New()
 func Init(config EurekaConfig) EurekaClient {
 
 	logger.Out = os.Stdout
-	logger.SetLevel(logrus.InfoLevel)
+	logger.SetLevel(logrus.DebugLevel)
 
 	config.IpAddress = getOutboundIP().String()
 	config.VipAddress = config.Name
@@ -89,10 +89,10 @@ func handleSigterm(config EurekaConfig) {
 }
 
 func CombineRoutes(routes Routes, eurekaRouts Routes) Routes {
-	for _, route := range eurekaRouts {
-		routes = append(routes, route)
+	for _, route := range routes {
+		eurekaRouts = append(eurekaRouts, route)
 	}
-	return routes
+	return eurekaRouts
 }
 
 func startWebServer(routes Routes, port string) {

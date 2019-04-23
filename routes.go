@@ -35,11 +35,39 @@ var routes = Routes{
 		http.HandlerFunc(Env),
 	},
 	Route{
+		"Env",
+		"GET",
+		"/actuator/env/",
+		nil,
+		http.HandlerFunc(Env),
+	},
+	Route{
 		"Metrics",
 		"GET",
 		"/actuator/metrics",
 		nil,
 		http.HandlerFunc(Metrics),
+	},
+	Route{
+		"Metrics Property",
+		"GET",
+		"/actuator/metrics/",
+		nil,
+		http.HandlerFunc(Metrics),
+	},
+	Route{
+		"Actuator",
+		"GET",
+		"/actuator",
+		nil,
+		http.HandlerFunc(Actuator),
+	},
+	Route{
+		"Error",
+		"GET",
+		"/actuator/",
+		nil,
+		http.HandlerFunc(Error),
 	},
 }
 

@@ -1,28 +1,92 @@
 package fairway
 
 import (
-	"encoding/json"
 	"os"
+	"strconv"
 	"strings"
 )
 
-func env() ([]byte, error) {
-	env := new(envObject)
-	env.SystemEnvironment = make(map[string]string)
+type EnvData struct {
+	ActiveProfiles []string `json:"activeProfiles"`
+	Property Property `json:"property,omitempty"`
+	PropertySources []Sources `json:"propertySources"`
 
-	for _, e := range os.Environ() {
-		pair := strings.Split(e, "=")
-		env.SystemEnvironment[pair[0]] = pair[1]
-	}
-
-	b, err := json.Marshal(env)
-	if err != nil {
-		return nil, err
-	}
-	return b, nil
 }
 
-type envObject struct {
-	Configuration     map[string]interface{} `json:"configuration"`
-	SystemEnvironment map[string]string      `json:"systemEnvironment"`
+type Sources struct {
+	Name string `json:"name"`
+	Property map[string]Property `json:"property,omitempty"`
+}
+
+type Property struct {
+	Value string `json:"value,omitempty"`
+	Origin string `json:"origin,omitempty"`
+	Source string `json:"source,omitempty"`
+}
+
+func env(property string) ([]byte, error) {
+	env := EnvData{ActiveProfiles:[]string{"go"}}
+	env.PropertySources = make([]Sources,0)
+	sysProps := getSystemProperties(property)
+	sysEnv := getSystemEnvironmentProperties(property)
+
+	if property != "" {
+		env.Property = getProperty(property,sysProps,sysEnv)
+	}
+
+	env.PropertySources = append(env.PropertySources,sysProps)
+	env.PropertySources = append(env.PropertySources,sysEnv)
+	return toJson(env), nil
+}
+
+func getProperty(prop string, props Sources, sysEnv Sources) Property {
+	p := Property{}
+	if val, ok := props.Property[prop]; ok {
+		p = val
+		p.Source = props.Name
+	}
+
+	if val, ok := sysEnv.Property[prop]; ok {
+		p.Source = props.Name
+		p = val
+	}
+	return p
+}
+
+func getSystemEnvironmentProperties(prop string) Sources {
+	source := Sources{}
+	source.Name = "systemEnvironment"
+	p := map[string]Property{}
+	for _, e := range os.Environ() {
+		e := strings.Split(e, "=")
+		if strings.HasPrefix(e[0], "_") {
+			continue
+		}
+		if !strings.Contains(e[0],"PASSWORD") {
+			p[strings.ToUpper(e[0])] = Property{Value: e[1],
+				Origin: "System Environment Property \"" + e[0] + "\"",
+			}
+		}
+	}
+	if prop != "" {
+		if val, ok := p[prop]; ok {
+			tp := map[string]Property{}
+			tp[prop] = val
+			source.Property = tp
+		}
+	} else {
+		source.Property = p
+	}
+	return source
+}
+
+func getSystemProperties(prop string) Sources {
+	source := Sources{}
+	source.Name = "systemProperties"
+	p := map[string]Property{}
+	if prop == "PID" {
+		p["PID"] = Property{Value: strconv.Itoa(os.Getpid())}
+	}
+	source.Property = p
+	return source
 }
