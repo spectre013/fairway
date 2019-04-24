@@ -44,7 +44,7 @@ var methods = map[string]func() []Measurement{
 	"jvm.gc.memory.promoted":    jvmGC,
 	"jvm.gc.live.data.size":     jvmGC,
 	"jvm.gc.pause":              jvmGCPause,
-	"jvm.memory.committed":       memoryComitted,
+	"jvm.memory.committed":      memoryComitted,
 	"system.cpu.count":          cpuCount,
 	"jvm.buffer.memory.used":    buffer,
 	"jvm.threads.daemon":        threads,
@@ -53,8 +53,8 @@ var methods = map[string]func() []Measurement{
 	"jvm.buffer.total.capacity": buffer,
 	"jvm.threads.live":          processsThreads,
 	"process.cpu.usage":         processsCPU,
-	"jvm.memory.max":			 memoryMax,
-	"jvm.threads.peak":			 processsThreads,
+	"jvm.memory.max":            memoryMax,
+	"jvm.threads.peak":          processsThreads,
 }
 
 var mem runtime.MemStats
@@ -79,14 +79,14 @@ type Tag struct {
 	Values []string `json:"values"`
 }
 
-func metrics(metric string,query map[string][]string) ([]byte, error) {
+func metrics(metric string, query map[string][]string) ([]byte, error) {
 	MAXGC = 0
 	runtime.ReadMemStats(&mem)
-	p = process.Process{Pid:int32(os.Getpid())}
+	p = process.Process{Pid: int32(os.Getpid())}
 	var m Metric
 	if metric != "" {
 		if function, ok := methods[metric]; ok {
-			logger.Info("Running: ", metric, "()")
+			logger.Debug("Running: ", metric, "()")
 			m = createMetric(metric, metricValues[metric])
 			m.Measurement = runMetric(function)
 			m.AvailableTags = getTags(query)
@@ -103,9 +103,9 @@ func metrics(metric string,query map[string][]string) ([]byte, error) {
 
 func getTags(query map[string][]string) []Tag {
 	t := make([]Tag, 0)
-	for _,a := range query["tags"] {
-		tgs := strings.Split(a,":")
-		tag := Tag{Tag:tgs[0],Values:[]string{tgs[1]}}
+	for _, a := range query["tags"] {
+		tgs := strings.Split(a, ":")
+		tag := Tag{Tag: tgs[0], Values: []string{tgs[1]}}
 		t = append(t, tag)
 	}
 	return t
@@ -203,7 +203,7 @@ func cpuUsage() []Measurement {
 }
 
 func processsCPU() []Measurement {
-	p := process.Process{Pid:int32(os.Getpid())}
+	p := process.Process{Pid: int32(os.Getpid())}
 	usage, _ := p.CPUPercent()
 
 	ms := makeMs()
@@ -218,7 +218,6 @@ func processsThreads() []Measurement {
 	ms = append(ms, map[string]interface{}{"value": "VALUE", "stat": 0})
 	return createMeaturement(ms)
 }
-
 
 // ###################################################### //
 func runMetric(f func() []Measurement) []Measurement {

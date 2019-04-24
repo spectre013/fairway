@@ -63,6 +63,20 @@ var routes = Routes{
 		http.HandlerFunc(Actuator),
 	},
 	Route{
+		"Loggers",
+		"GET",
+		"/actuator/loggers",
+		nil,
+		http.HandlerFunc(Loggers),
+	},
+	Route{
+		"Loggers",
+		"GET",
+		"/actuator/loggers/",
+		nil,
+		http.HandlerFunc(Loggers),
+	},
+	Route{
 		"Error",
 		"GET",
 		"/actuator/",

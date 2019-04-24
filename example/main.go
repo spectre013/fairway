@@ -47,13 +47,11 @@ func main() {
 
 	router := http.NewServeMux()
 
-
 	router = fairway.BuildRoutes(routes, router)
 
 	log.Println("Server is up and listening on ", listenAddr)
 	http.ListenAndServe(listenAddr, router)
 }
-
 
 func index(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello World!"))

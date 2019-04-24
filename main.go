@@ -30,11 +30,12 @@ type EurekaConfig struct {
 }
 
 var logger = logrus.New()
+var LogLevel = logrus.InfoLevel
 
 func Init(config EurekaConfig) EurekaClient {
 
 	logger.Out = os.Stdout
-	logger.SetLevel(logrus.DebugLevel)
+	logger.SetLevel(LogLevel)
 
 	config.IpAddress = getOutboundIP().String()
 	config.VipAddress = config.Name
@@ -47,7 +48,6 @@ func Init(config EurekaConfig) EurekaClient {
 	fmt.Println("########################################################")
 	fmt.Println()
 	fmt.Println()
-
 
 	logger.Printf("%v", config)
 	handleSigterm(config) // Graceful shutdown on Ctrl+C or kill

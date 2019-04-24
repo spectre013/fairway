@@ -4,25 +4,23 @@ import (
 	"github.com/shirou/gopsutil/disk"
 )
 
-
 type HealthData struct {
-	Status string `json:"status"`
+	Status  string                 `json:"status"`
 	Details map[string]interface{} `json:"details"`
 }
 
 type DiskSpace struct {
-	Status string `json:"status"`
+	Status  string            `json:"status"`
 	Details map[string]uint64 `json:"details"`
 }
 
 func health() ([]byte, error) {
 
-	health := HealthData{Status:"UP"}
-
+	health := HealthData{Status: "UP"}
 
 	det := map[string]interface{}{}
 
-	ds, err  := getDiskSpace()
+	ds, err := getDiskSpace()
 	if err != nil {
 		return []byte(""), err
 	}
@@ -33,7 +31,7 @@ func health() ([]byte, error) {
 	return toJson(health), nil
 }
 
-func getDiskSpace() (DiskSpace,error) {
+func getDiskSpace() (DiskSpace, error) {
 	diskStat, err := disk.Usage("/")
 	if err != nil {
 		return DiskSpace{}, err
