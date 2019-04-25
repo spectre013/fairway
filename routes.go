@@ -1,12 +1,18 @@
 package fairway
 
-import "net/http"
+import (
+	"crypto/subtle"
+	"github.com/gorilla/mux"
+	"net/http"
+	"strings"
+	_ "strings"
+)
 
 type Route struct {
 	Name        string
 	Method      string
 	Pattern     string
-	HandlerFunc http.HandlerFunc
+	Produces	string
 	Handler     http.Handler
 }
 
@@ -17,82 +23,107 @@ var routes = Routes{
 		"Info",
 		"GET",
 		"/actuator/info",
-		nil,
+		 "application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
 		http.HandlerFunc(Info),
 	},
 	Route{
 		"Health",
-		"POST",
+		"GET",
 		"/actuator/health",
-		nil,
+		"application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
 		http.HandlerFunc(Health),
 	},
 	Route{
 		"Env",
 		"GET",
 		"/actuator/env",
-		nil,
+		"application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
 		http.HandlerFunc(Env),
 	},
 	Route{
 		"Env",
 		"GET",
-		"/actuator/env/",
-		nil,
+		"/actuator/env/{toMatch}",
+		"application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
 		http.HandlerFunc(Env),
 	},
 	Route{
 		"Metrics",
 		"GET",
 		"/actuator/metrics",
-		nil,
+		"application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
 		http.HandlerFunc(Metrics),
 	},
 	Route{
 		"Metrics Property",
 		"GET",
-		"/actuator/metrics/",
-		nil,
+		"/actuator/metrics/{requiredMetricName}",
+		"application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
 		http.HandlerFunc(Metrics),
 	},
 	Route{
 		"Actuator",
 		"GET",
 		"/actuator",
-		nil,
+		"application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
 		http.HandlerFunc(Actuator),
 	},
 	Route{
 		"Loggers",
 		"GET",
 		"/actuator/loggers",
-		nil,
+		"application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
 		http.HandlerFunc(Loggers),
 	},
 	Route{
 		"Loggers",
 		"GET",
-		"/actuator/loggers/",
-		nil,
+		"/actuator/loggers/{name}",
+		"application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
 		http.HandlerFunc(Loggers),
 	},
 	Route{
-		"Error",
+		"Loggers",
+		"POST",
+		"/actuator/loggers/{name}",
+		"application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
+		http.HandlerFunc(UpdateLogger),
+	},
+	Route{
+		"Mappings",
 		"GET",
-		"/actuator/",
-		nil,
-		http.HandlerFunc(Error),
+		"/actuator/mappings",
+		"application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
+		http.HandlerFunc(Mappings),
 	},
 }
 
-func BuildRoutes(routes Routes, e *http.ServeMux) *http.ServeMux {
+func BuildRoutes(routes Routes, e *mux.Router) *mux.Router {
 	loadGitInfo()
 	for _, route := range routes {
-		if route.HandlerFunc != nil {
-			e.Handle(route.Pattern, Logger(route.HandlerFunc, route.Name))
-		} else {
-			e.Handle(route.Pattern, Logger(route.Handler, route.Name))
+		if secure.Enable && strings.HasPrefix(route.Pattern,"/actuator"){
+			route.Handler = BasicAuth(route.Handler,secure.User,secure.Password,"Password required to access actuator endpoints")
 		}
+		e.Handle(route.Pattern, route.Handler).Methods(route.Method)
+
 	}
+	e.Use(loggingMiddleware)
 	return e
+}
+
+func BasicAuth(handler http.Handler, username, password, realm string) http.HandlerFunc {
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger.Infof("%v", r)
+		user, pass, ok := r.BasicAuth()
+
+		if !ok || subtle.ConstantTimeCompare([]byte(user), []byte(username)) != 1 || subtle.ConstantTimeCompare([]byte(pass), []byte(password)) != 1 {
+			w.Header().Set("WWW-Authenticate", `Basic realm="`+realm+`"`)
+			w.WriteHeader(401)
+			w.Write([]byte("unauthorized.\n"))
+			return
+		}
+
+		handler.ServeHTTP(w, r)
+	})
 }

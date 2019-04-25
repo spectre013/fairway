@@ -14,7 +14,7 @@ type EnvData struct {
 
 type Sources struct {
 	Name     string              `json:"name"`
-	Property map[string]Property `json:"property,omitempty"`
+	Property map[string]Property `json:"properties"`
 }
 
 type Property struct {
@@ -35,6 +35,8 @@ func env(property string) ([]byte, error) {
 
 	env.PropertySources = append(env.PropertySources, sysProps)
 	env.PropertySources = append(env.PropertySources, sysEnv)
+	env.PropertySources = append(env.PropertySources, getProperties("servletContextInitParams",""))
+	env.PropertySources = append(env.PropertySources, getProperties("defaultProperties",""))
 	return toJson(env), nil
 }
 
@@ -83,9 +85,15 @@ func getSystemProperties(prop string) Sources {
 	source := Sources{}
 	source.Name = "systemProperties"
 	p := map[string]Property{}
-	if prop == "PID" {
 		p["PID"] = Property{Value: strconv.Itoa(os.Getpid())}
-	}
+	source.Property = p
+	return source
+}
+
+func getProperties(title, prop string) Sources {
+	source := Sources{}
+	source.Name = title
+	p := map[string]Property{}
 	source.Property = p
 	return source
 }

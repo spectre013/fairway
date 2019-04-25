@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-
+	"github.com/gorilla/mux"
 	"github.com/spectre013/fairway"
 )
 
@@ -25,6 +25,9 @@ func main() {
 		SecurePort:  "8943",
 		RestService: true,
 		PreferIP:    true,
+		Username:	"user",
+		Password:	"password",
+		Secure:		false,
 	}
 
 	eureka := fairway.Init(config)
@@ -35,8 +38,8 @@ func main() {
 			Name:        "Index",
 			Method:      "GET",
 			Pattern:     "/",
-			HandlerFunc: index,
-			Handler:     nil, //http.FileServer(http.Dir("/Users/brian.paulson/pa/tb/tb-ui/tb-search/dist/search")),
+			Produces:	 "text/html",
+			Handler:     http.FileServer(http.Dir("/Users/brian.paulson/pa/tb/tb-ui/tb-search/dist/search")),
 		},
 	}
 
@@ -45,12 +48,15 @@ func main() {
 	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
 	logger.Printf("Server is starting...")
 
-	router := http.NewServeMux()
+	router := mux.NewRouter()
 
 	router = fairway.BuildRoutes(routes, router)
 
 	log.Println("Server is up and listening on ", listenAddr)
-	http.ListenAndServe(listenAddr, router)
+	err := http.ListenAndServe(listenAddr, router)
+	if err != nil {
+		logger.Fatal("Unable to start server", err)
+	}
 }
 
 func index(w http.ResponseWriter, r *http.Request) {

@@ -24,6 +24,7 @@ func acuator(host string) ([]byte, error) {
 	m["metrics-requiredMetricName"] = Link{Href: "http://" + host + "/actuator/env/{requiredMetricName}", templated: true}
 	m["loggers"] = Link{Href: "http://" + host + "/actuator/loggers", templated: false}
 	m["loggers-name"] = Link{Href: "http://" + host + "/actuator/loggers/{name}", templated: true}
+	m["mappings"] = Link{Href: "http://" + host + "/actuator/mappings", templated: true}
 
 	links.Link = m
 	return toJson(links), nil

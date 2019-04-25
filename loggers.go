@@ -1,6 +1,7 @@
 package fairway
 
 import (
+	"errors"
 	"github.com/sirupsen/logrus"
 	"strings"
 )
@@ -27,7 +28,7 @@ type LogStruct struct {
 	EffectiveLevel  string `json:"effectiveLevel"`
 }
 
-func loggers() ([]byte, error) {
+func loggers(key string) ([]byte, error) {
 	if load {
 		loggerData = LoggerData{Levels: levels}
 
@@ -38,21 +39,22 @@ func loggers() ([]byte, error) {
 		}
 		load = false
 	}
-	if LogLevel.String() == "debug" {
-		logger.Info("INFO")
-		logger.Warn("WARN")
-		logger.Error("ERROR")
-		logger.Debug("DEBUG")
-		logger.Trace("TRACE")
+	if key != "" {
+		return toJson(loggerData.Loggers[key]), nil
 	}
+
 	return toJson(loggerData), nil
 }
 
 func loggersUpdate(key string, update LogStruct) ([]byte, error) {
+
 	setLog(update.ConfiguredLevel)
 	update.EffectiveLevel = update.ConfiguredLevel
-	loggerData.Loggers[key] = update
-	return toJson(loggerData), nil
+	if _, ok := loggerData.Loggers[key]; ok {
+		loggerData.Loggers[key] = update
+		return toJson(loggerData.Loggers[key]), nil
+	}
+	return toJson(LoggerData{}), errors.New("Key not found")
 }
 
 func setLog(level string) {

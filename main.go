@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	"github.com/sirupsen/logrus"
+	"github.com/gorilla/mux"
 )
 
 type EurekaClient struct {
@@ -27,10 +28,21 @@ type EurekaConfig struct {
 	SecurePort  string
 	RestService bool
 	PreferIP    bool
+	Username	string
+	Password	string
+	Secure		bool
+}
+
+type Secure struct {
+	User		string
+	Password 	string
+	Enable 		bool
 }
 
 var logger = logrus.New()
 var LogLevel = logrus.InfoLevel
+var secure = Secure{}
+var appRoutes = Routes{}
 
 func Init(config EurekaConfig) EurekaClient {
 
@@ -43,6 +55,13 @@ func Init(config EurekaConfig) EurekaClient {
 	if config.PreferIP {
 		config.HostName = config.IpAddress
 	}
+	secure.Enable = false
+
+	if config.Secure {
+		secure.User = config.Username
+		secure.Password = config.Password
+		secure.Enable = config.Secure
+	}
 
 	fmt.Println("Starting up ", config.Name)
 	fmt.Println("########################################################")
@@ -51,7 +70,6 @@ func Init(config EurekaConfig) EurekaClient {
 
 	logger.Printf("%v", config)
 	handleSigterm(config) // Graceful shutdown on Ctrl+C or kill
-	routes := routes
 	go Register(config) // Performs Eureka registration
 	// start server and Block if not a rest service...
 	if !config.RestService {
@@ -92,11 +110,12 @@ func CombineRoutes(routes Routes, eurekaRouts Routes) Routes {
 	for _, route := range routes {
 		eurekaRouts = append(eurekaRouts, route)
 	}
+	appRoutes = eurekaRouts
 	return eurekaRouts
 }
 
 func startWebServer(routes Routes, port string) {
-	router := http.NewServeMux()
+	router := mux.NewRouter()
 	router = BuildRoutes(routes, router)
 	logger.Info("Server is up and listening on ", port)
 	http.ListenAndServe(port, router)

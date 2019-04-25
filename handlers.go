@@ -2,9 +2,9 @@ package fairway
 
 import (
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
-	"strings"
 )
 
 func Error(w http.ResponseWriter, r *http.Request) {
@@ -20,30 +20,27 @@ func Actuator(w http.ResponseWriter, r *http.Request) {
 	actuator, err := acuator(r.Host)
 	writeResponse(actuator, err, w)
 }
-
-func Loggers(w http.ResponseWriter, r *http.Request) {
-	path := strings.Split(r.URL.Path, "/")
-	var logs []byte
-	var err error
+func UpdateLogger(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	key := vars["name"]
+	bodyBytes, err := ioutil.ReadAll(r.Body)
 	var log LogStruct
-	if r.Method == "POST" {
-		key := ""
-		if len(path) > 3 {
-			key = path[3]
-		}
-
-		bodyBytes, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			writeResponse(nil, err, w)
-		}
-		err = json.Unmarshal(bodyBytes, &log)
-		if err != nil {
-			writeResponse(nil, err, w)
-		}
-		logs, err = loggersUpdate(key, log)
-	} else {
-		logs, err = loggers()
+	var logs []byte
+	if err != nil {
+		writeResponse(nil, err, w)
 	}
+	err = json.Unmarshal(bodyBytes, &log)
+	if err != nil {
+		writeResponse(nil, err, w)
+	}
+	logs, err = loggersUpdate(key, log)
+	writeResponse(logs,err, w)
+}
+func Loggers(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	key := vars["name"]
+
+	logs, err := loggers(key)
 	writeResponse(logs, err, w)
 }
 
@@ -52,22 +49,22 @@ func Health(w http.ResponseWriter, r *http.Request) {
 	writeResponse(health, err, w)
 }
 
+func Mappings(w http.ResponseWriter, r *http.Request) {
+	m, err := mappings(appName, appRoutes)
+	writeResponse(m, err, w)
+}
+
 func Env(w http.ResponseWriter, r *http.Request) {
-	path := strings.Split(r.URL.Path, "/")
-	prop := ""
-	if len(path) > 3 {
-		prop = path[3]
-	}
+	vars := mux.Vars(r)
+	prop := vars["toMatch"]
 	json, err := env(prop)
 	writeResponse(json, err, w)
 }
 
 func Metrics(w http.ResponseWriter, r *http.Request) {
-	path := strings.Split(r.URL.Path, "/")
-	metric := ""
-	if len(path) > 3 {
-		metric = path[3]
-	}
+	//requiredMetricName
+	vars := mux.Vars(r)
+	metric := vars["requiredMetricName"]
 	json, err := metrics(metric, r.URL.Query())
 	writeResponse(json, err, w)
 }
@@ -80,3 +77,4 @@ func writeResponse(data []byte, err error, w http.ResponseWriter) {
 
 	w.Write(data)
 }
+

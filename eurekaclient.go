@@ -46,11 +46,14 @@ type DataCenter struct {
 
 var instanceId string
 var eurekaURL string
+var appName string
 
 func Register(config EurekaConfig) {
 	startTime = time.Now()
 	reg := CreateRegistration(config)
 	registerAction := CreateHTTPAction(config, reg)
+
+	appName = config.Name
 
 	logger.Debug(string(toJson(reg)))
 
