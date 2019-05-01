@@ -2,10 +2,12 @@ package fairway
 
 import (
 	"fmt"
+	"math"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 
@@ -84,16 +86,64 @@ func Init(config EurekaConfig) EurekaClient {
 }
 
 func getOutboundIP() net.IP {
-	conn, err := net.Dial("udp", "8.8.8.8:80")
+
+	interfaces, err := net.Interfaces()
+
 	if err != nil {
-		logger.Warn(err)
+
+		fmt.Print(err)
+		os.Exit(0)
 	}
-	defer conn.Close()
 
-	localAddr := conn.LocalAddr().(*net.UDPAddr)
+	var result net.IP
+	var loopback net.IP
+	lowest := math.MaxInt8
+	for _, i := range interfaces {
+		addr, _ := i.Addrs()
+		for _, a := range addr {
 
-	return localAddr.IP
+			ip, err := getIP(a)
+			if err != nil {
+				fmt.Println("Error Getting IP ADDRESS")
+			}
+			ipv4 := ip.To4()
+			if ipv4 != nil && !ipv4.IsLoopback() {
+				if isUp(i.Flags.String()) {
+					if i.Index < lowest {
+						result = ipv4
+					}
+				}
+			} else {
+				if ipv4 != nil {
+					loopback = ipv4
+				}
+			}
+		}
+	}
+	if result == nil {
+		result = loopback
+	}
+	return result
 }
+
+func getIP(i net.Addr) (net.IP, error) {
+	ip, _, err := net.ParseCIDR(i.String())
+	if err != nil {
+		return nil, err
+	}
+	return ip, nil
+}
+
+func isUp(flag string) bool {
+	if strings.Contains(flag, "up") {
+		return true
+	}
+	return false
+}
+
+
+
+
 
 func handleSigterm(config EurekaConfig) {
 	c := make(chan os.Signal, 1)
