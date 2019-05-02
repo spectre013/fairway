@@ -9,11 +9,11 @@ import (
 )
 
 type Route struct {
-	Name        string
-	Method      string
-	Pattern     string
-	Produces	string
-	Handler     http.Handler
+	Name     string
+	Method   string
+	Pattern  string
+	Produces string
+	Handler  http.Handler
 }
 
 type Routes []Route
@@ -23,7 +23,7 @@ var routes = Routes{
 		"Info",
 		"GET",
 		"/actuator/info",
-		 "application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
+		"application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
 		http.HandlerFunc(Info),
 	},
 	Route{
@@ -101,8 +101,8 @@ var routes = Routes{
 func BuildRoutes(routes Routes, e *mux.Router) *mux.Router {
 	loadGitInfo()
 	for _, route := range routes {
-		if secure.Enable && strings.HasPrefix(route.Pattern,"/actuator"){
-			route.Handler = BasicAuth(route.Handler,secure.User,secure.Password,"Password required to access actuator endpoints")
+		if secure.Enable && strings.HasPrefix(route.Pattern, "/actuator") {
+			route.Handler = BasicAuth(route.Handler, secure.User, secure.Password, "Password required to access actuator endpoints")
 		}
 		e.Handle(route.Pattern, route.Handler).Methods(route.Method)
 

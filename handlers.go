@@ -34,7 +34,7 @@ func UpdateLogger(w http.ResponseWriter, r *http.Request) {
 		writeResponse(nil, err, w)
 	}
 	logs, err = loggersUpdate(key, log)
-	writeResponse(logs,err, w)
+	writeResponse(logs, err, w)
 }
 func Loggers(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -77,4 +77,3 @@ func writeResponse(data []byte, err error, w http.ResponseWriter) {
 
 	w.Write(data)
 }
-

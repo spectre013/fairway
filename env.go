@@ -35,8 +35,8 @@ func env(property string) ([]byte, error) {
 
 	env.PropertySources = append(env.PropertySources, sysProps)
 	env.PropertySources = append(env.PropertySources, sysEnv)
-	env.PropertySources = append(env.PropertySources, getProperties("servletContextInitParams",""))
-	env.PropertySources = append(env.PropertySources, getProperties("defaultProperties",""))
+	env.PropertySources = append(env.PropertySources, getProperties("servletContextInitParams", ""))
+	env.PropertySources = append(env.PropertySources, getProperties("defaultProperties", ""))
 	return toJson(env), nil
 }
 
@@ -85,7 +85,7 @@ func getSystemProperties(prop string) Sources {
 	source := Sources{}
 	source.Name = "systemProperties"
 	p := map[string]Property{}
-		p["PID"] = Property{Value: strconv.Itoa(os.Getpid())}
+	p["PID"] = Property{Value: strconv.Itoa(os.Getpid())}
 	source.Property = p
 	return source
 }

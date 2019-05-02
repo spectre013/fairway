@@ -11,8 +11,8 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/sirupsen/logrus"
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 )
 
 type EurekaClient struct {
@@ -30,15 +30,15 @@ type EurekaConfig struct {
 	SecurePort  string
 	RestService bool
 	PreferIP    bool
-	Username	string
-	Password	string
-	Secure		bool
+	Username    string
+	Password    string
+	Secure      bool
 }
 
 type Secure struct {
-	User		string
-	Password 	string
-	Enable 		bool
+	User     string
+	Password string
+	Enable   bool
 }
 
 var logger = logrus.New()
@@ -72,7 +72,7 @@ func Init(config EurekaConfig) EurekaClient {
 
 	logger.Printf("%v", config)
 	handleSigterm(config) // Graceful shutdown on Ctrl+C or kill
-	go Register(config) // Performs Eureka registration
+	go Register(config)   // Performs Eureka registration
 	// start server and Block if not a rest service...
 	if !config.RestService {
 		go startWebServer(routes, config.Port)
@@ -140,10 +140,6 @@ func isUp(flag string) bool {
 	}
 	return false
 }
-
-
-
-
 
 func handleSigterm(config EurekaConfig) {
 	c := make(chan os.Signal, 1)

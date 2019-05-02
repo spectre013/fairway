@@ -6,7 +6,7 @@ type Links struct {
 
 type Link struct {
 	Href      string `json:"href"`
-	templated bool   `json:"templated"`
+	Templated bool   `json:"templated"`
 }
 
 func acuator(host string) ([]byte, error) {
@@ -15,16 +15,16 @@ func acuator(host string) ([]byte, error) {
 
 	m := map[string]Link{}
 
-	m["self"] = Link{Href: "http://" + host + "/actuator", templated: false}
-	m["health"] = Link{Href: "http://" + host + "/actuator/health", templated: false}
-	m["info"] = Link{Href: "http://" + host + "/actuator/info", templated: false}
-	m["env"] = Link{Href: "http://" + host + "/actuator/env", templated: false}
-	m["env-toMatch"] = Link{Href: "http://" + host + "/actuator/env/{toMatch}", templated: true}
-	m["metrics"] = Link{Href: "http://" + host + "/actuator/metrics", templated: true}
-	m["metrics-requiredMetricName"] = Link{Href: "http://" + host + "/actuator/env/{requiredMetricName}", templated: true}
-	m["loggers"] = Link{Href: "http://" + host + "/actuator/loggers", templated: false}
-	m["loggers-name"] = Link{Href: "http://" + host + "/actuator/loggers/{name}", templated: true}
-	m["mappings"] = Link{Href: "http://" + host + "/actuator/mappings", templated: true}
+	m["self"] = Link{Href: "http://" + host + "/actuator", Templated: false}
+	m["health"] = Link{Href: "http://" + host + "/actuator/health", Templated: false}
+	m["info"] = Link{Href: "http://" + host + "/actuator/info", Templated: false}
+	m["env"] = Link{Href: "http://" + host + "/actuator/env", Templated: false}
+	m["env-toMatch"] = Link{Href: "http://" + host + "/actuator/env/{toMatch}", Templated: true}
+	m["metrics"] = Link{Href: "http://" + host + "/actuator/metrics", Templated: true}
+	m["metrics-requiredMetricName"] = Link{Href: "http://" + host + "/actuator/env/{requiredMetricName}", Templated: true}
+	m["loggers"] = Link{Href: "http://" + host + "/actuator/loggers", Templated: false}
+	m["loggers-name"] = Link{Href: "http://" + host + "/actuator/loggers/{name}", Templated: true}
+	m["mappings"] = Link{Href: "http://" + host + "/actuator/mappings", Templated: true}
 
 	links.Link = m
 	return toJson(links), nil

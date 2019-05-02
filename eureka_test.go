@@ -45,11 +45,10 @@ func TestCombineRoutes(t *testing.T) {
 	total := 5
 	addRoute := Routes{
 		Route{
-			Name:        "Index",
-			Method:      "GET",
-			Pattern:     "/",
-			HandlerFunc: nil,
-			Handler:     http.FileServer(http.Dir("dist/search")),
+			Name:    "Index",
+			Method:  "GET",
+			Pattern: "/",
+			Handler: http.FileServer(http.Dir("dist/search")),
 		},
 	}
 
