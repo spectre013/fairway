@@ -1,3 +1,5 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/spectre013/fairway)](https://goreportcard.com/report/github.com/spectre013/fairway)
+
 # Fairway
 
 a simple Eureka client for go that will register your service with eureka and send hearbeats as well as deregister on shutdown or panic. 
