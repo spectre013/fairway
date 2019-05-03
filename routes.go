@@ -2,12 +2,13 @@ package fairway
 
 import (
 	"crypto/subtle"
-	"github.com/gorilla/mux"
 	"net/http"
 	"strings"
-	_ "strings"
+
+	"github.com/gorilla/mux"
 )
 
+//Route data type
 type Route struct {
 	Name     string
 	Method   string
@@ -16,6 +17,7 @@ type Route struct {
 	Handler  http.Handler
 }
 
+//Routes to be combined with main app routes to set up API
 type Routes []Route
 
 var routes = Routes{
@@ -98,11 +100,12 @@ var routes = Routes{
 	},
 }
 
+// BuildRoutes - Builds route handlers
 func BuildRoutes(routes Routes, e *mux.Router) *mux.Router {
 	loadGitInfo()
 	for _, route := range routes {
 		if secure.Enable && strings.HasPrefix(route.Pattern, "/actuator") {
-			route.Handler = BasicAuth(route.Handler, secure.User, secure.Password, "Password required to access actuator endpoints")
+			route.Handler = basicAuth(route.Handler, secure.User, secure.Password, "Password required to access actuator endpoints")
 		}
 		e.Handle(route.Pattern, route.Handler).Methods(route.Method)
 
@@ -111,7 +114,7 @@ func BuildRoutes(routes Routes, e *mux.Router) *mux.Router {
 	return e
 }
 
-func BasicAuth(handler http.Handler, username, password, realm string) http.HandlerFunc {
+func basicAuth(handler http.Handler, username, password, realm string) http.HandlerFunc {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.Infof("%v", r)

@@ -2,8 +2,9 @@ package fairway
 
 import (
 	"errors"
-	"github.com/sirupsen/logrus"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 var levels = []string{
@@ -15,46 +16,46 @@ var levels = []string{
 	"TRACE",
 }
 
-var loggerData = LoggerData{}
+var loggerData = loggerStruct{}
 var load = true
 
-type LoggerData struct {
+type loggerStruct struct {
 	Levels  []string             `json:"levels"`
-	Loggers map[string]LogStruct `json:"loggers"`
+	Loggers map[string]logStruct `json:"loggers"`
 }
 
-type LogStruct struct {
+type logStruct struct {
 	ConfiguredLevel string `json:"configuredLevel"`
 	EffectiveLevel  string `json:"effectiveLevel"`
 }
 
 func loggers(key string) ([]byte, error) {
 	if load {
-		loggerData = LoggerData{Levels: levels}
+		loggerData = loggerStruct{Levels: levels}
 
-		loggerData.Loggers = map[string]LogStruct{}
-		loggerData.Loggers["ROOT"] = LogStruct{
-			ConfiguredLevel: strings.ToUpper(LogLevel.String()),
-			EffectiveLevel:  strings.ToUpper(LogLevel.String()),
+		loggerData.Loggers = map[string]logStruct{}
+		loggerData.Loggers["ROOT"] = logStruct{
+			ConfiguredLevel: strings.ToUpper(logLevel.String()),
+			EffectiveLevel:  strings.ToUpper(logLevel.String()),
 		}
 		load = false
 	}
 	if key != "" {
-		return toJson(loggerData.Loggers[key]), nil
+		return toJSON(loggerData.Loggers[key]), nil
 	}
 
-	return toJson(loggerData), nil
+	return toJSON(loggerData), nil
 }
 
-func loggersUpdate(key string, update LogStruct) ([]byte, error) {
+func loggersUpdate(key string, update logStruct) ([]byte, error) {
 
 	setLog(update.ConfiguredLevel)
 	update.EffectiveLevel = update.ConfiguredLevel
 	if _, ok := loggerData.Loggers[key]; ok {
 		loggerData.Loggers[key] = update
-		return toJson(loggerData.Loggers[key]), nil
+		return toJSON(loggerData.Loggers[key]), nil
 	}
-	return toJson(LoggerData{}), errors.New("Key not found")
+	return toJSON(loggerStruct{}), errors.New("Key not found")
 }
 
 func setLog(level string) {

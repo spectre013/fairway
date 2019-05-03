@@ -2,6 +2,7 @@ package fairway
 
 import "net"
 
+// GetLocalIP helper to get the lowest index interface ip address
 func GetLocalIP() string {
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {

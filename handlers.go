@@ -2,29 +2,35 @@ package fairway
 
 import (
 	"encoding/json"
-	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
+// Error Handeler
 func Error(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Error Route not found", http.StatusNotFound)
 }
 
+// Info Handler
 func Info(w http.ResponseWriter, r *http.Request) {
 	json, err := info()
 	writeResponse(json, err, w)
 }
 
+// Actuator Handler
 func Actuator(w http.ResponseWriter, r *http.Request) {
 	actuator, err := acuator(r.Host)
 	writeResponse(actuator, err, w)
 }
+
+// UpdateLogger Handler
 func UpdateLogger(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	key := vars["name"]
 	bodyBytes, err := ioutil.ReadAll(r.Body)
-	var log LogStruct
+	var log logStruct
 	var logs []byte
 	if err != nil {
 		writeResponse(nil, err, w)
@@ -36,6 +42,8 @@ func UpdateLogger(w http.ResponseWriter, r *http.Request) {
 	logs, err = loggersUpdate(key, log)
 	writeResponse(logs, err, w)
 }
+
+//Loggers Handler
 func Loggers(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	key := vars["name"]
@@ -44,16 +52,19 @@ func Loggers(w http.ResponseWriter, r *http.Request) {
 	writeResponse(logs, err, w)
 }
 
+//Health Handler
 func Health(w http.ResponseWriter, r *http.Request) {
 	health, err := health()
 	writeResponse(health, err, w)
 }
 
+//Mappings Handler
 func Mappings(w http.ResponseWriter, r *http.Request) {
 	m, err := mappings(appName, appRoutes)
 	writeResponse(m, err, w)
 }
 
+//Env Handler
 func Env(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	prop := vars["toMatch"]
@@ -61,6 +72,7 @@ func Env(w http.ResponseWriter, r *http.Request) {
 	writeResponse(json, err, w)
 }
 
+//Metrics Handler
 func Metrics(w http.ResponseWriter, r *http.Request) {
 	//requiredMetricName
 	vars := mux.Vars(r)

@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-var gitInfo map[string]string = make(map[string]string)
+var gitInfo = make(map[string]string)
 
 func loadGitInfo() {
 
@@ -40,23 +40,23 @@ func loadGitInfo() {
 }
 
 func info() ([]byte, error) {
-	infoJson := generateInfoData()
-	return toJson(infoJson), nil
+	info := generateInfoData()
+	return toJSON(info), nil
 }
 
-func generateInfoData() *infoJson {
-	infoJson := new(infoJson)
-	infoJson.Git = new(git)
-	infoJson.Git.Commit = new(commit)
+func generateInfoData() *infoData {
+	infoJSON := new(infoData)
+	infoJSON.Git = new(git)
+	infoJSON.Git.Commit = new(commit)
 
-	infoJson.Git.Branch = gitInfo["branch"]
-	infoJson.Git.Commit.ID = gitInfo["commitid"]
-	infoJson.Git.Commit.Time = gitInfo["committime"]
+	infoJSON.Git.Branch = gitInfo["branch"]
+	infoJSON.Git.Commit.ID = gitInfo["commitid"]
+	infoJSON.Git.Commit.Time = gitInfo["committime"]
 
-	return infoJson
+	return infoJSON
 }
 
-type infoJson struct {
+type infoData struct {
 	Git *git `json:"git"`
 }
 

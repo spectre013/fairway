@@ -9,9 +9,9 @@ import (
 	// "strconv"
 )
 
-// Accepts a Httpaction and a one-way channel to write the results to.
-func DoHttpRequest(httpAction HttpAction) bool {
-	req := buildHttpRequest(httpAction)
+// DoHTTPRequest Accepts a Httpaction and a one-way channel to write the results to.
+func DoHTTPRequest(httpAction HTTPAction) bool {
+	req := buildHTTPRequest(httpAction)
 	var DefaultTransport = &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
@@ -39,11 +39,11 @@ func DoHttpRequest(httpAction HttpAction) bool {
 
 		if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusNoContent {
 			return true
-		} else {
-			logger.Error("Response body: ", body)
-			logger.Error("Response: ", resp.StatusCode)
-			return false
 		}
+		logger.Error("Response body: ", body)
+		logger.Error("Response: ", resp.StatusCode)
+		return false
+
 	}
 	return false
 }
@@ -57,17 +57,17 @@ func getBody(resp *http.Response) (string, error) {
 	return string(bodyBytes), nil
 }
 
-func buildHttpRequest(httpAction HttpAction) *http.Request {
+func buildHTTPRequest(httpAction HTTPAction) *http.Request {
 	var req *http.Request
 	var err error
 	if httpAction.Body != "" {
 		reader := strings.NewReader(httpAction.Body)
-		req, err = http.NewRequest(httpAction.Method, httpAction.Url, reader)
+		req, err = http.NewRequest(httpAction.Method, httpAction.URL, reader)
 	} else if httpAction.Template != "" {
 		reader := strings.NewReader(httpAction.Template)
-		req, err = http.NewRequest(httpAction.Method, httpAction.Url, reader)
+		req, err = http.NewRequest(httpAction.Method, httpAction.URL, reader)
 	} else {
-		req, err = http.NewRequest(httpAction.Method, httpAction.Url, nil)
+		req, err = http.NewRequest(httpAction.Method, httpAction.URL, nil)
 	}
 	if err != nil {
 		logger.Error(err)

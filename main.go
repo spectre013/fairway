@@ -15,16 +15,18 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+//EurekaClient ...
 type EurekaClient struct {
 	Client Eureka
 	Routes Routes
 }
 
+//EurekaConfig ...
 type EurekaConfig struct {
 	Name        string
-	Url         string
+	URL         string
 	VipAddress  string
-	IpAddress   string
+	IPAddress   string
 	HostName    string
 	Port        string
 	SecurePort  string
@@ -35,27 +37,28 @@ type EurekaConfig struct {
 	Secure      bool
 }
 
-type Secure struct {
+type secureStruct struct {
 	User     string
 	Password string
 	Enable   bool
 }
 
 var logger = logrus.New()
-var LogLevel = logrus.InfoLevel
-var secure = Secure{}
+var logLevel = logrus.InfoLevel
+var secure = secureStruct{}
 var appRoutes = Routes{}
 
+// Init function for setting up Eureka Client
 func Init(config EurekaConfig) EurekaClient {
 
 	logger.Out = os.Stdout
-	logger.SetLevel(LogLevel)
+	logger.SetLevel(logLevel)
 
-	config.IpAddress = getOutboundIP().String()
+	config.IPAddress = getOutboundIP().String()
 	config.VipAddress = config.Name
 
 	if config.PreferIP {
-		config.HostName = config.IpAddress
+		config.HostName = config.IPAddress
 	}
 	secure.Enable = false
 
@@ -152,6 +155,7 @@ func handleSigterm(config EurekaConfig) {
 	}()
 }
 
+// CombineRoutes Combines routes from external source with actuator routes
 func CombineRoutes(routes Routes, eurekaRouts Routes) Routes {
 	for _, route := range routes {
 		eurekaRouts = append(eurekaRouts, route)

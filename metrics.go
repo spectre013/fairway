@@ -2,12 +2,13 @@ package fairway
 
 import (
 	"errors"
-	"github.com/shirou/gopsutil/cpu"
-	"github.com/shirou/gopsutil/process"
 	"os"
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/process"
 )
 
 var names = []string{
@@ -35,7 +36,7 @@ var names = []string{
 	"process.start.time",
 }
 
-var methods = map[string]func() []Measurement{
+var methods = map[string]func() []measurement{
 	"process.uptime":            uptime,
 	"jvm.threads.states":        processsThreads,
 	"process.start.time":        sinceStart,
@@ -58,36 +59,36 @@ var methods = map[string]func() []Measurement{
 }
 
 var mem runtime.MemStats
-var MAXGC uint64
+var maxgc uint64
 var p process.Process
 
-type Metric struct {
+type metric struct {
 	Name          string        `json:"name"`
 	Description   string        `json:"description"`
 	BaseUnit      string        `json:"baseUnit"`
-	Measurement   []Measurement `json:"measurements"`
-	AvailableTags []Tag         `json:"availableTags"`
+	Measurement   []measurement `json:"measurements"`
+	AvailableTags []tag         `json:"availableTags"`
 }
 
-type Measurement struct {
+type measurement struct {
 	Statistic string      `json:"statistic"`
 	Value     interface{} `json:"value"`
 }
 
-type Tag struct {
+type tag struct {
 	Tag    string   `json:"tag"`
 	Values []string `json:"values"`
 }
 
-func metrics(metric string, query map[string][]string) ([]byte, error) {
-	MAXGC = 0
+func metrics(metricIN string, query map[string][]string) ([]byte, error) {
+	maxgc = 0
 	runtime.ReadMemStats(&mem)
 	p = process.Process{Pid: int32(os.Getpid())}
-	var m Metric
-	if metric != "" {
-		if function, ok := methods[metric]; ok {
-			logger.Debug("Running: ", metric, "()")
-			m = createMetric(metric, metricValues[metric])
+	var m metric
+	if metricIN != "" {
+		if function, ok := methods[metricIN]; ok {
+			logger.Debug("Running: ", metricIN, "()")
+			m = createMetric(metricIN, metricValues[metricIN])
 			m.Measurement = runMetric(function)
 			m.AvailableTags = getTags(query)
 
@@ -95,53 +96,53 @@ func metrics(metric string, query map[string][]string) ([]byte, error) {
 			return nil, errors.New("method not found")
 		}
 	} else {
-		return toJson(map[string][]string{"names": names}), nil
+		return toJSON(map[string][]string{"names": names}), nil
 	}
 
-	return toJson(m), nil
+	return toJSON(m), nil
 }
 
-func getTags(query map[string][]string) []Tag {
-	t := make([]Tag, 0)
+func getTags(query map[string][]string) []tag {
+	t := make([]tag, 0)
 	for _, a := range query["tags"] {
 		tgs := strings.Split(a, ":")
-		tag := Tag{Tag: tgs[0], Values: []string{tgs[1]}}
+		tag := tag{Tag: tgs[0], Values: []string{tgs[1]}}
 		t = append(t, tag)
 	}
 	return t
 }
 
-func threads() []Measurement {
+func threads() []measurement {
 	ms := makeMs()
 	ms = append(ms, map[string]interface{}{"value": "VALUE", "stat": 0.0})
 	return createMeaturement(ms)
 }
 
-func uptime() []Measurement {
+func uptime() []measurement {
 	ms := makeMs()
 	ms = append(ms, map[string]interface{}{"value": "VALUE", "stat": time.Since(startTime).Seconds()})
 	return createMeaturement(ms)
 }
 
-func sinceStart() []Measurement {
+func sinceStart() []measurement {
 	ms := makeMs()
 	ms = append(ms, map[string]interface{}{"value": "VALUE", "stat": startTime})
 	return createMeaturement(ms)
 }
 
-func memoryUsed() []Measurement {
+func memoryUsed() []measurement {
 	ms := makeMs()
 	ms = append(ms, map[string]interface{}{"value": "VALUE", "stat": mem.HeapInuse})
 	return createMeaturement(ms)
 }
 
-func jvmGC() []Measurement {
+func jvmGC() []measurement {
 	ms := makeMs()
 	ms = append(ms, map[string]interface{}{"value": "COUNT", "stat": 0.0})
 	return createMeaturement(ms)
 }
 
-func jvmGCPause() []Measurement {
+func jvmGCPause() []measurement {
 	//PauseTotalNs
 	pause := int64(mem.PauseTotalNs)
 	//Don't deplay GC Pause until it surpasses 100000 nanoseconds
@@ -154,33 +155,33 @@ func jvmGCPause() []Measurement {
 	ms = append(ms, map[string]interface{}{"value": "TOTAL_TIME", "stat": val.Seconds()})
 
 	for _, val := range mem.PauseNs {
-		if val > MAXGC {
-			MAXGC = val
+		if val > maxgc {
+			maxgc = val
 		}
 	}
-	if MAXGC < 100000 {
-		MAXGC = 0
+	if maxgc < 100000 {
+		maxgc = 0
 	}
-	maxtime := time.Duration(MAXGC)
+	maxtime := time.Duration(maxgc)
 
 	ms = append(ms, map[string]interface{}{"value": "MAX", "stat": maxtime.Seconds()})
 
 	return createMeaturement(ms)
 }
 
-func memoryComitted() []Measurement {
+func memoryComitted() []measurement {
 	ms := makeMs()
 	ms = append(ms, map[string]interface{}{"value": "VALUE", "stat": mem.HeapSys})
 	return createMeaturement(ms)
 }
 
-func memoryMax() []Measurement {
+func memoryMax() []measurement {
 	ms := makeMs()
 	ms = append(ms, map[string]interface{}{"value": "VALUE", "stat": mem.StackSys})
 	return createMeaturement(ms)
 }
 
-func cpuCount() []Measurement {
+func cpuCount() []measurement {
 	cpuCount := runtime.NumCPU()
 
 	ms := makeMs()
@@ -188,13 +189,13 @@ func cpuCount() []Measurement {
 	return createMeaturement(ms)
 }
 
-func buffer() []Measurement {
+func buffer() []measurement {
 	ms := makeMs()
 	ms = append(ms, map[string]interface{}{"value": "VALUE", "stat": 0})
 	return createMeaturement(ms)
 }
 
-func cpuUsage() []Measurement {
+func cpuUsage() []measurement {
 	usage, _ := cpu.Percent(0, false)
 
 	ms := makeMs()
@@ -202,7 +203,7 @@ func cpuUsage() []Measurement {
 	return createMeaturement(ms)
 }
 
-func processsCPU() []Measurement {
+func processsCPU() []measurement {
 	p := process.Process{Pid: int32(os.Getpid())}
 	usage, _ := p.CPUPercent()
 
@@ -211,7 +212,7 @@ func processsCPU() []Measurement {
 	return createMeaturement(ms)
 }
 
-func processsThreads() []Measurement {
+func processsThreads() []measurement {
 	//usage, _ := p.Threads()
 
 	ms := makeMs()
@@ -220,7 +221,7 @@ func processsThreads() []Measurement {
 }
 
 // ###################################################### //
-func runMetric(f func() []Measurement) []Measurement {
+func runMetric(f func() []measurement) []measurement {
 	return f()
 }
 
@@ -228,19 +229,19 @@ func makeMs() []map[string]interface{} {
 	return make([]map[string]interface{}, 0)
 }
 
-func createMetric(metric string, values map[string]string) Metric {
-	return Metric{Name: metric,
+func createMetric(metricIN string, values map[string]string) metric {
+	return metric{Name: metricIN,
 		Description: values["description"],
 		BaseUnit:    values["baseUnit"],
 	}
 }
 
-func createMeaturement(ms []map[string]interface{}) []Measurement {
-	measurement := make([]Measurement, 0)
+func createMeaturement(ms []map[string]interface{}) []measurement {
+	msm := make([]measurement, 0)
 	for _, val := range ms {
-		measurement = append(measurement, Measurement{Statistic: val["value"].(string), Value: val["stat"]})
+		msm = append(msm, measurement{Statistic: val["value"].(string), Value: val["stat"]})
 	}
-	return measurement
+	return msm
 }
 
 var metricValues = map[string]map[string]string{

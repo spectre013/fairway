@@ -10,57 +10,60 @@ import (
 
 var startTime time.Time
 
+// Eureka Interface
 type Eureka interface {
 	Register()
 	StartHeartbeat()
 }
 
+// EurekaRegistration data type
 type EurekaRegistration struct {
-	Instance Instance `json:"instance"`
+	Instance instance `json:"instance"`
 }
 
-type Instance struct {
-	InstanceId     string     `json:"instanceId"`
+type instance struct {
+	InstanceID     string     `json:"instanceId"`
 	HostName       string     `json:"hostName"`
 	App            string     `json:"app"`
-	IpAddr         string     `json:"ipAddr"`
+	IPADDR         string     `json:"ipAddr"`
 	VipAddress     string     `json:"vipAddress"`
 	Status         string     `json:"status"`
-	Port           Port       `json:"port"`
-	SecurePort     Port       `json:"securePort"`
-	HomePageUrl    string     `json:"homePageUrl"`
-	StatusPageUrl  string     `json:"statusPageUrl"`
-	HealthCheckUrl string     `json:"healthCheckUrl"`
-	DataCenterInfo DataCenter `json:"dataCenterInfo"`
+	Port           port       `json:"port"`
+	SecurePort     port       `json:"securePort"`
+	HomePageURL    string     `json:"homePageUrl"`
+	StatusPageURL  string     `json:"statusPageUrl"`
+	HealthCheckURL string     `json:"healthCheckUrl"`
+	DataCenterInfo dataCenter `json:"dataCenterInfo"`
 }
 
-type Port struct {
+type port struct {
 	PortNumber string `json:"$"`
 	Enabled    bool   `json:"@enabled"`
 }
 
-type DataCenter struct {
+type dataCenter struct {
 	Class string `json:"@class"`
 	Name  string `json:"name"`
 }
 
-var instanceId string
+var instanceID string
 var eurekaURL string
 var appName string
 
+// Register Rgister application with EurekA
 func Register(config EurekaConfig) {
 	startTime = time.Now()
-	reg := CreateRegistration(config)
-	registerAction := CreateHTTPAction(config, reg)
+	reg := createRegistration(config)
+	registerAction := createHTTPAction(config, reg)
 
 	appName = config.Name
 
-	logger.Debug(string(toJson(reg)))
+	logger.Debug(string(toJSON(reg)))
 
 	var result bool
 	for {
-		logger.Info("Attempting to register with Eureka at ", config.Url)
-		result = DoHttpRequest(registerAction)
+		logger.Info("Attempting to register with Eureka at ", config.URL)
+		result = DoHTTPRequest(registerAction)
 		if result {
 			logger.Info("Eureka registration successfull ... ")
 			heartbeatStatus := make(chan bool)
@@ -74,41 +77,41 @@ func Register(config EurekaConfig) {
 	}
 }
 
-func CreateHTTPAction(config EurekaConfig, reg EurekaRegistration) HttpAction {
-	return HttpAction{
-		Url:         config.Url + "/apps/" + config.Name,
+func createHTTPAction(config EurekaConfig, reg EurekaRegistration) HTTPAction {
+	return HTTPAction{
+		URL:         config.URL + "/apps/" + config.Name,
 		Method:      http.MethodPost,
 		ContentType: "application/json",
-		Body:        string(toJson(reg)),
+		Body:        string(toJSON(reg)),
 	}
 }
 
-func CreateRegistration(config EurekaConfig) EurekaRegistration {
-	instanceId = GetUUID()
+func createRegistration(config EurekaConfig) EurekaRegistration {
+	instanceID = getUUID()
 
 	reg := EurekaRegistration{}
-	port := Port{PortNumber: config.Port, Enabled: true}
-	secureport := Port{PortNumber: config.SecurePort, Enabled: false}
-	dataCenter := DataCenter{Class: "com.netflix.appinfo.MyDataCenterInfo", Name: "MyOwn"}
-	instance := Instance{
-		InstanceId:     config.Name + ":" + instanceId,
+	unsecurePort := port{PortNumber: config.Port, Enabled: true}
+	secureport := port{PortNumber: config.SecurePort, Enabled: true}
+	dataCenter := dataCenter{Class: "com.netflix.appinfo.MyDataCenterInfo", Name: "MyOwn"}
+	instance := instance{
+		InstanceID:     config.Name + ":" + instanceID,
 		HostName:       config.HostName,
 		App:            strings.ToUpper(config.Name),
-		IpAddr:         config.IpAddress,
+		IPADDR:         config.IPAddress,
 		VipAddress:     config.VipAddress,
 		Status:         "UP",
-		Port:           port,
+		Port:           unsecurePort,
 		SecurePort:     secureport,
-		HomePageUrl:    fmt.Sprintf("http://%s:%s/", config.IpAddress, config.Port),
-		StatusPageUrl:  fmt.Sprintf("http://%s:%s/actuator/info", config.IpAddress, config.Port),
-		HealthCheckUrl: fmt.Sprintf("http://%s:%s/actuator/health", config.IpAddress, config.Port),
+		HomePageURL:    fmt.Sprintf("http://%s:%s/", config.IPAddress, config.Port),
+		StatusPageURL:  fmt.Sprintf("http://%s:%s/actuator/info", config.IPAddress, config.Port),
+		HealthCheckURL: fmt.Sprintf("http://%s:%s/actuator/health", config.IPAddress, config.Port),
 		DataCenterInfo: dataCenter}
 
 	reg.Instance = instance
 	return reg
 }
 
-func toJson(r interface{}) []byte {
+func toJSON(r interface{}) []byte {
 	f, err := json.Marshal(r)
 	if err != nil {
 		logger.Error("error:", err)
@@ -128,21 +131,21 @@ func startHeartbeat(config EurekaConfig) bool {
 }
 
 func heartbeat(config EurekaConfig) bool {
-	heartbeatAction := HttpAction{
-		Url:    config.Url + "/apps/" + config.Name + "/" + config.Name + ":" + instanceId,
+	heartbeatAction := HTTPAction{
+		URL:    config.URL + "/apps/" + config.Name + "/" + config.Name + ":" + instanceID,
 		Method: "PUT",
 	}
-	return DoHttpRequest(heartbeatAction)
+	return DoHTTPRequest(heartbeatAction)
 
 }
 
 func deregister(config EurekaConfig) {
 	logger.Info("Trying to deregister application...")
 	// Deregister
-	deregisterAction := HttpAction{
-		Url:    config.Url + "/apps/" + config.Name + "/" + config.Name + ":" + instanceId,
+	deregisterAction := HTTPAction{
+		URL:    config.URL + "/apps/" + config.Name + "/" + config.Name + ":" + instanceID,
 		Method: "DELETE",
 	}
-	DoHttpRequest(deregisterAction)
+	DoHTTPRequest(deregisterAction)
 	logger.Info("Deregistered application, exiting.")
 }

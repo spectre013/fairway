@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-var BuildHttpRequest = buildHttpRequest
+var buildHTTPRequest = buildHttpRequest
 
 func getConfig() EurekaConfig {
 	return EurekaConfig{
@@ -63,7 +63,7 @@ func TestBuildHttpRequest(t *testing.T) {
 	reg := CreateRegistration(config)
 
 	httpaction := CreateHTTPAction(config, reg)
-	req := BuildHttpRequest(httpaction)
+	req := buildHttpRequest(httpaction)
 	if req == nil {
 		t.Error("Request creation failed")
 	}

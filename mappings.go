@@ -5,34 +5,34 @@ import (
 )
 
 func mappings(name string, routes Routes) ([]byte, error) {
-	c := Contexts{}
-	c.Contexts = map[string]Mapping{}
-	c.Contexts[name] = Mapping{}
+	c := contexts{}
+	c.Contexts = map[string]mapping{}
+	c.Contexts[name] = mapping{}
 
-	d := make([]DispatcherServlet, 0)
+	d := make([]dispatcherServlet, 0)
 
 	for _, route := range routes {
-		ds := DispatcherServlet{Handler: route.Name, Predicate: ""}
-		details := Details{}
-		hm := HandlerMethod{ClassName: route.Name, Name: route.Name, Descriptor: "(http.ResponseWriter,*http.Request)"}
+		ds := dispatcherServlet{Handler: route.Name, Predicate: ""}
+		details := details{}
+		hm := handlerMethod{ClassName: route.Name, Name: route.Name, Descriptor: "(http.ResponseWriter,*http.Request)"}
 
-		consumes := make([]Consumes, 0)
-		headers := make([]Headers, 0)
+		consumer := make([]consumes, 0)
+		headers := make([]headers, 0)
 		methods := make([]string, 0)
-		params := make([]Params, 0)
+		params := make([]params, 0)
 		patterns := make([]string, 0)
-		produces := make([]Consumes, 0)
+		produces := make([]consumes, 0)
 
 		methods = append(methods, route.Method)
 		patterns = append(patterns, route.Pattern)
 
-		consumes = append(consumes, Consumes{MediaType: route.Produces, Negated: false})
+		consumer = append(consumer, consumes{MediaType: route.Produces, Negated: false})
 		if strings.Contains(route.Produces, "+json") {
-			consumes = append(consumes, Consumes{MediaType: "application/json", Negated: false})
+			consumer = append(consumer, consumes{MediaType: "application/json", Negated: false})
 		}
 
-		rmc := RequestMappingConditions{
-			Consumes: consumes,
+		rmc := requestMappingConditions{
+			Consumes: consumer,
 			Headers:  headers,
 			Methods:  methods,
 			Params:   params,
@@ -45,81 +45,81 @@ func mappings(name string, routes Routes) ([]byte, error) {
 		ds.Details = details
 		d = append(d, ds)
 	}
-	m := Mapping{}
-	dis := Dispatcher{DispatcherServlet: d}
+	m := mapping{}
+	dis := dispatcher{DispatcherServlet: d}
 	m.Mappings.DispatcherServlets = dis
 	m.Mappings.ParentID = appName
 	c.Contexts[name] = m
-	return toJson(c), nil
+	return toJSON(c), nil
 }
 
-type Contexts struct {
-	Contexts map[string]Mapping `json:"contexts"`
+type contexts struct {
+	Contexts map[string]mapping `json:"contexts"`
 }
 
-type Mapping struct {
-	Mappings  MapData `json:"mappings"`
-	Bootstrap MapData `json:"bootstrap"`
+type mapping struct {
+	Mappings  mapData `json:"mappings"`
+	Bootstrap mapData `json:"bootstrap"`
 }
 
-type MapData struct {
-	DispatcherServlets Dispatcher `json:"dispatcherServlets"`
+type mapData struct {
+	DispatcherServlets dispatcher `json:"dispatcherServlets"`
 	ParentID           string     `json:"parentId"`
 }
 
-type Dispatcher struct {
-	DispatcherServlet []DispatcherServlet `json:"dispatcherServlet"`
-	ServerFilters     []Filters           `json:"serverletFilters"`
-	Serverlets        []Serverlets        `json:"serverlets"`
+type dispatcher struct {
+	DispatcherServlet []dispatcherServlet `json:"dispatcherServlet"`
+	ServerFilters     []filters           `json:"serverletFilters"`
+	Serverlets        []serverlets        `json:"serverlets"`
 }
 
-type DispatcherServlet struct {
+type dispatcherServlet struct {
 	Handler   string  `json:"handler"`
 	Predicate string  `json:"predicate"`
-	Details   Details `json:"details"`
+	Details   details `json:"details"`
 }
 
-type Details struct {
-	HandlerMethod            HandlerMethod            `json:"handlerMethod"`
-	RequestMappingConditions RequestMappingConditions `json:"requestMappingConditions"`
+type details struct {
+	HandlerMethod            handlerMethod            `json:"handlerMethod"`
+	RequestMappingConditions requestMappingConditions `json:"requestMappingConditions"`
 }
 
-type HandlerMethod struct {
+type handlerMethod struct {
 	Name       string `json:"name"`
 	ClassName  string `json:"className"`
 	Descriptor string `json:"descriptor"`
 }
 
-type RequestMappingConditions struct {
-	Consumes []Consumes `json:"consumes"`
-	Headers  []Headers  `json:"headers"`
+type requestMappingConditions struct {
+	Consumes []consumes `json:"consumes"`
+	Headers  []headers  `json:"headers"`
 	Methods  []string   `json:"methods"`
-	Params   []Params   `json:"params"`
+	Params   []params   `json:"params"`
 	Patterns []string   `json:"patterns"`
-	Produces []Consumes `json:"produces"`
+	Produces []consumes `json:"produces"`
 }
 
-type Consumes struct {
+type consumes struct {
 	MediaType string `json:"mediaType"`
 	Negated   bool   `json:"negated"`
 }
 
-type Headers struct {
+type headers struct {
 }
 
-type Produces struct {
+type produces struct {
 }
-type Params struct {
+type params struct {
 }
 
-type Filters struct {
+type filters struct {
 	ServletNameMappings []string `json:"serverletMappings"`
-	UrlPatternMappings  []string `json:"urlPatternMappings"`
+	URLPatternMappings  []string `json:"urlPatternMappings"`
 	Name                string   `json:"name"`
 	ClassName           string   `json:"className"`
 }
 
-type Serverlets struct {
+type serverlets struct {
 	Mappings  []string `json:"mappings"`
 	Name      string   `json:"name"`
 	ClassName string   `json:"className"`

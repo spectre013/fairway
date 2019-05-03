@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+
 	"github.com/gorilla/mux"
 	"github.com/spectre013/fairway"
 )
@@ -19,15 +20,15 @@ func main() {
 
 	config := fairway.EurekaConfig{
 		Name:        "eureka-test",
-		Url:         "http://eurekaserver:8761/eureka",
+		URL:         "http://eurekaserver:8761/eureka",
 		HostName:    "c00064.issinc.com",
 		Port:        "8900",
 		SecurePort:  "8943",
 		RestService: true,
 		PreferIP:    true,
-		Username:	"user",
-		Password:	"password",
-		Secure:		false,
+		Username:    "user",
+		Password:    "password",
+		Secure:      false,
 	}
 
 	eureka := fairway.Init(config)
@@ -35,11 +36,11 @@ func main() {
 
 	var routes = fairway.Routes{
 		fairway.Route{
-			Name:        "Index",
-			Method:      "GET",
-			Pattern:     "/",
-			Produces:	 "text/html",
-			Handler:     http.FileServer(http.Dir("/Users/brian.paulson/pa/tb/tb-ui/tb-search/dist/search")),
+			Name:     "Index",
+			Method:   "GET",
+			Pattern:  "/",
+			Produces: "text/html",
+			Handler:  http.FileServer(http.Dir("/Users/brian.paulson/pa/tb/tb-ui/tb-search/dist/search")),
 		},
 	}
 
@@ -61,11 +62,4 @@ func main() {
 
 func index(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello World!"))
-}
-
-func Log(handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("%s %s %s", r.RemoteAddr, r.Method, r.URL)
-		handler.ServeHTTP(w, r)
-	})
 }

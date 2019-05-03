@@ -2,6 +2,6 @@ package fairway
 
 import "github.com/twinj/uuid"
 
-func GetUUID() string {
+func getUUID() string {
 	return uuid.NewV4().String()
 }
