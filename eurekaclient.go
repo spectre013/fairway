@@ -65,13 +65,13 @@ func Register(config EurekaConfig) {
 		logger.Info("Attempting to register with Eureka at ", config.URL)
 		result = DoHTTPRequest(registerAction)
 		if result {
-			logger.Info("Eureka registration successfull ... ")
+			logger.Info("Eureka registration successful ... ")
 			heartbeatStatus := make(chan bool)
 			go func() { heartbeatStatus <- startHeartbeat(config) }() // Performs Eureka heartbeating (async)
 			status := <-heartbeatStatus
 			logger.Warn("Heartbeat request failed trying to reregister: heartbeat status -> ", status)
 		} else {
-			logger.Info("Eureka registration unsuccessfull or euraka is down will keep trying... ")
+			logger.Info("Eureka registration successful or euraka is down will keep trying... ")
 			time.Sleep(time.Second * 5)
 		}
 	}
