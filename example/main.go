@@ -38,9 +38,18 @@ func main() {
 		fairway.Route{
 			Name:     "Index",
 			Method:   "GET",
+			Pattern:  "/index",
+			Produces: "text/html",
+			Handler:  http.HandlerFunc(index),
+			Static:   true,
+		},
+		fairway.Route{
+			Name:     "Index",
+			Method:   "GET",
 			Pattern:  "/",
 			Produces: "text/html",
-			Handler:  http.FileServer(http.Dir("/Users/brian.paulson/pa/tb/tb-ui/tb-search/dist/search")),
+			Handler:  http.FileServer(http.Dir("/Users/brian.paulson/go/src/github.com/spectre013/fairway/example/site")),
+			Static:   true,
 		},
 	}
 

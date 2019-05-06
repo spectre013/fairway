@@ -15,6 +15,7 @@ type Route struct {
 	Pattern  string
 	Produces string
 	Handler  http.Handler
+	Static   bool
 }
 
 //Routes to be combined with main app routes to set up API
@@ -27,6 +28,7 @@ var routes = Routes{
 		"/actuator/info",
 		"application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
 		http.HandlerFunc(Info),
+		false,
 	},
 	Route{
 		"Health",
@@ -34,6 +36,7 @@ var routes = Routes{
 		"/actuator/health",
 		"application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
 		http.HandlerFunc(Health),
+		false,
 	},
 	Route{
 		"Env",
@@ -41,6 +44,7 @@ var routes = Routes{
 		"/actuator/env",
 		"application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
 		http.HandlerFunc(Env),
+		false,
 	},
 	Route{
 		"Env",
@@ -48,6 +52,7 @@ var routes = Routes{
 		"/actuator/env/{toMatch}",
 		"application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
 		http.HandlerFunc(Env),
+		false,
 	},
 	Route{
 		"Metrics",
@@ -55,6 +60,7 @@ var routes = Routes{
 		"/actuator/metrics",
 		"application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
 		http.HandlerFunc(Metrics),
+		false,
 	},
 	Route{
 		"Metrics Property",
@@ -62,6 +68,7 @@ var routes = Routes{
 		"/actuator/metrics/{requiredMetricName}",
 		"application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
 		http.HandlerFunc(Metrics),
+		false,
 	},
 	Route{
 		"Actuator",
@@ -69,6 +76,7 @@ var routes = Routes{
 		"/actuator",
 		"application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
 		http.HandlerFunc(Actuator),
+		false,
 	},
 	Route{
 		"Loggers",
@@ -76,6 +84,7 @@ var routes = Routes{
 		"/actuator/loggers",
 		"application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
 		http.HandlerFunc(Loggers),
+		false,
 	},
 	Route{
 		"Loggers",
@@ -83,6 +92,7 @@ var routes = Routes{
 		"/actuator/loggers/{name}",
 		"application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
 		http.HandlerFunc(Loggers),
+		false,
 	},
 	Route{
 		"Loggers",
@@ -90,6 +100,7 @@ var routes = Routes{
 		"/actuator/loggers/{name}",
 		"application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
 		http.HandlerFunc(UpdateLogger),
+		false,
 	},
 	Route{
 		"Mappings",
@@ -97,6 +108,7 @@ var routes = Routes{
 		"/actuator/mappings",
 		"application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
 		http.HandlerFunc(Mappings),
+		false,
 	},
 }
 
@@ -107,7 +119,11 @@ func BuildRoutes(routes Routes, e *mux.Router) *mux.Router {
 		if secure.Enable && strings.HasPrefix(route.Pattern, "/actuator") {
 			route.Handler = basicAuth(route.Handler, secure.User, secure.Password, "Password required to access actuator endpoints")
 		}
-		e.Handle(route.Pattern, route.Handler).Methods(route.Method)
+		if route.Static {
+			e.PathPrefix(route.Pattern).Handler(route.Handler)
+		} else {
+			e.Handle(route.Pattern, route.Handler).Methods(route.Method)
+		}
 
 	}
 	e.Use(loggingMiddleware)
