@@ -91,7 +91,7 @@ func createRegistration(config EurekaConfig) EurekaRegistration {
 
 	reg := EurekaRegistration{}
 	unsecurePort := port{PortNumber: config.Port, Enabled: true}
-	secureport := port{PortNumber: config.SecurePort, Enabled: true}
+	secureport := port{PortNumber: config.SecurePort, Enabled: false}
 	dataCenter := dataCenter{Class: "com.netflix.appinfo.MyDataCenterInfo", Name: "MyOwn"}
 	instance := instance{
 		InstanceID:     config.Name + ":" + instanceID,
