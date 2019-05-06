@@ -1,4 +1,4 @@
-// +build ignore
+
 
 package main
 
@@ -60,7 +60,7 @@ func main() {
 	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
 	logger.Printf("Server is starting...")
 
-	router := mux.NewRouter()
+	router := mux.NewRouter().StrictSlash(true)
 
 	router = fairway.BuildRoutes(routes, router)
 

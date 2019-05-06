@@ -86,6 +86,5 @@ func writeResponse(data []byte, err error, w http.ResponseWriter) {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 	w.Header().Set("Content-Type", "application/vnd.spring-boot.actuator.v2+json;charset=UTF-8")
-
 	w.Write(data)
 }

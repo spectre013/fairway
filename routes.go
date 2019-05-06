@@ -73,7 +73,7 @@ var routes = Routes{
 	Route{
 		"Actuator",
 		"GET",
-		"/actuator",
+		"/actuator/",
 		"application/vnd.spring-boot.actuator.v2+json;charset=UTF-8",
 		http.HandlerFunc(Actuator),
 		false,
@@ -116,13 +116,13 @@ var routes = Routes{
 func BuildRoutes(routes Routes, e *mux.Router) *mux.Router {
 	loadGitInfo()
 	for _, route := range routes {
-		if secure.Enable && strings.HasPrefix(route.Pattern, "/actuator") {
+		if secure.Enable && strings.HasPrefix(route.Pattern, "/actuator/") {
 			route.Handler = basicAuth(route.Handler, secure.User, secure.Password, "Password required to access actuator endpoints")
 		}
 		if route.Static {
 			e.PathPrefix(route.Pattern).Handler(route.Handler)
 		} else {
-			e.Handle(route.Pattern, route.Handler).Methods(route.Method)
+			e.Handle(route.Pattern, route.Handler)
 		}
 
 	}

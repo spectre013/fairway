@@ -85,6 +85,7 @@ func metrics(metricIN string, query map[string][]string) ([]byte, error) {
 	runtime.ReadMemStats(&mem)
 	p = process.Process{Pid: int32(os.Getpid())}
 	var m metric
+	logger.Info(metricIN)
 	if metricIN != "" {
 		if function, ok := methods[metricIN]; ok {
 			logger.Debug("Running: ", metricIN, "()")
