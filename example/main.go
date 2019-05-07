@@ -20,7 +20,7 @@ func main() {
 
 	config := fairway.EurekaConfig{
 		Name:        "eureka-test",
-		URL:         "http://eurekaserver:8761/eureka",
+		URL:         "http://docker.for.mac.localhost:8761/eureka",
 		HostName:    "c00064.issinc.com",
 		Port:        "8900",
 		SecurePort:  "8943",
@@ -48,7 +48,7 @@ func main() {
 			Method:   "GET",
 			Pattern:  "/",
 			Produces: "text/html",
-			Handler:  http.FileServer(http.Dir("/Users/brian.paulson/go/src/github.com/spectre013/fairway/example/site")),
+			Handler:  http.FileServer(http.Dir("/data/fairway/site")),
 			Static:   true,
 		},
 	}

@@ -100,20 +100,23 @@ func getOutboundIP() net.IP {
 
 	var result net.IP
 	var loopback net.IP
-	lowest := math.MaxInt8
+	lowest := math.MaxInt64
 	for _, i := range interfaces {
 		addr, _ := i.Addrs()
 		for _, a := range addr {
-
+			logger.Debug("Interface: ", a.String())
 			ip, err := getIP(a)
 			if err != nil {
 				fmt.Println("Error Getting IP ADDRESS")
 			}
 			ipv4 := ip.To4()
 			if ipv4 != nil && !ipv4.IsLoopback() {
+				logger.Debug("IPV4, up, isLoopback :", ipv4.String(), isUp(i.Flags.String()), ipv4.IsLoopback())
 				if isUp(i.Flags.String()) {
+					logger.Println(i.Index, lowest)
 					if i.Index < lowest {
 						result = ipv4
+						lowest = i.Index
 					}
 				}
 			} else {
