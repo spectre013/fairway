@@ -10,14 +10,9 @@ import (
 )
 
 // DoHTTPRequest Accepts a Httpaction and a one-way channel to write the results to.
-func DoHTTPRequest(httpAction HTTPAction) bool {
+func DoRegRequest(httpAction HTTPAction) bool {
 	req := buildHTTPRequest(httpAction)
-	var DefaultTransport = &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-
-	client := &http.Client{Transport: DefaultTransport, Timeout: time.Duration(10 * time.Second)}
-	resp, err := client.Do(req)
+	resp, err := doRequest(req)
 	if err != nil {
 		logger.Error("HTTP request failed:", err)
 		if resp != nil {
@@ -46,6 +41,15 @@ func DoHTTPRequest(httpAction HTTPAction) bool {
 
 	}
 	return false
+}
+
+func doRequest(req *http.Request) (*http.Response, error) {
+	var DefaultTransport = &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	client := &http.Client{Transport: DefaultTransport, Timeout: time.Duration(10 * time.Second)}
+	return  client.Do(req)
 }
 
 func getBody(resp *http.Response) (string, error) {

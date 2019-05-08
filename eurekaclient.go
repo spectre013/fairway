@@ -21,19 +21,36 @@ type EurekaRegistration struct {
 	Instance instance `json:"instance"`
 }
 
+type Applications struct {
+	VersionsDelta string        `json:"versions__delta"`
+	AppsHashcode  string        `json:"apps__hashcode"`
+	Application   []Application `json:"application"`
+}
+
+type Application struct {
+	Name     string     `json:"name"`
+	Instance []instance `json:"instance"`
+}
+
 type instance struct {
-	InstanceID     string     `json:"instanceId"`
-	HostName       string     `json:"hostName"`
-	App            string     `json:"app"`
-	IPADDR         string     `json:"ipAddr"`
-	VipAddress     string     `json:"vipAddress"`
-	Status         string     `json:"status"`
-	Port           port       `json:"port"`
-	SecurePort     port       `json:"securePort"`
-	HomePageURL    string     `json:"homePageUrl"`
-	StatusPageURL  string     `json:"statusPageUrl"`
-	HealthCheckURL string     `json:"healthCheckUrl"`
-	DataCenterInfo dataCenter `json:"dataCenterInfo"`
+	InstanceID                    string     `json:"instanceId"`
+	HostName                      string     `json:"hostName"`
+	App                           string     `json:"app"`
+	IPADDR                        string     `json:"ipAddr"`
+	VipAddress                    string     `json:"vipAddress"`
+	Status                        string     `json:"status"`
+	OverriddenStatus              string     `json:"overriddenStatus"`
+	Port                          port       `json:"port"`
+	SecurePort                    port       `json:"securePort"`
+	CountryID                     int        `json:"countryId"`
+	HomePageURL                   string     `json:"homePageUrl"`
+	StatusPageURL                 string     `json:"statusPageUrl"`
+	HealthCheckURL                string     `json:"healthCheckUrl"`
+	DataCenterInfo                dataCenter `json:"dataCenterInfo"`
+	IsCoordinatingDiscoveryServer bool       `json:"isCoordinatingDiscoveryServer"`
+	LastUpdatedTimestamp          uint64     `json:"lastUpdatedTimestamp"`
+	LastDirtyTimestamp            uint64     `json:"lastDirtyTimestamp"`
+	ActionType                    string     `json:"actionType"`
 }
 
 type port struct {
@@ -54,7 +71,7 @@ var appName string
 func Register(config EurekaConfig) {
 	startTime = time.Now()
 	reg := createRegistration(config)
-	registerAction := createHTTPAction(config, reg)
+	registerAction := createRegistrationAction(config, reg)
 
 	appName = config.Name
 
@@ -63,7 +80,7 @@ func Register(config EurekaConfig) {
 	var result bool
 	for {
 		logger.Info("Attempting to register with Eureka at ", config.URL)
-		result = DoHTTPRequest(registerAction)
+		result = DoRegRequest(registerAction)
 		if result {
 			logger.Info("Eureka registration successful ... ")
 			heartbeatStatus := make(chan bool)
@@ -77,13 +94,22 @@ func Register(config EurekaConfig) {
 	}
 }
 
-func createHTTPAction(config EurekaConfig, reg EurekaRegistration) HTTPAction {
+func createRegistrationAction(config EurekaConfig, reg EurekaRegistration) HTTPAction {
 	return HTTPAction{
 		URL:         config.URL + "/apps/" + config.Name,
 		Method:      http.MethodPost,
 		ContentType: "application/json",
 		Body:        string(toJSON(reg)),
 	}
+}
+
+func createAppsAction(config EurekaConfig, reg EurekaRegistration)  {
+	action := HTTPAction{
+		URL:         config.URL + "/apps" + config.Name,
+		Method:      http.MethodGet,
+		Accept: "application/json",
+	}
+	DoRegRequest(action)
 }
 
 func createRegistration(config EurekaConfig) EurekaRegistration {
@@ -135,7 +161,7 @@ func heartbeat(config EurekaConfig) bool {
 		URL:    config.URL + "/apps/" + config.Name + "/" + config.Name + ":" + instanceID,
 		Method: "PUT",
 	}
-	return DoHTTPRequest(heartbeatAction)
+	return DoRegRequest(heartbeatAction)
 
 }
 
@@ -146,6 +172,6 @@ func deregister(config EurekaConfig) {
 		URL:    config.URL + "/apps/" + config.Name + "/" + config.Name + ":" + instanceID,
 		Method: "DELETE",
 	}
-	DoHTTPRequest(deregisterAction)
+	DoRegRequest(deregisterAction)
 	logger.Info("Deregistered application, exiting.")
 }
