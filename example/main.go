@@ -1,36 +1,25 @@
+// +build ignore
 package main
 
 import (
 	"flag"
-	"log"
-	"net/http"
-	"os"
-
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/spectre013/fairway"
+	"log"
+	"net/http"
 )
 
 var (
-	listenAddr string
+	conf string
 )
 
 func main() {
-	flag.StringVar(&listenAddr, "listen-addr", ":8900", "server listen address")
+
+	flag.StringVar(&conf, "conf", "./conf.yml", "Yaml Configuration")
 	flag.Parse()
 
-	config := fairway.EurekaConfig{
-		Name:        "eureka-test",
-		URL:         "http://docker.for.mac.localhost:8761/eureka",
-		HostName:    "c00064.issinc.com",
-		Port:        "8900",
-		SecurePort:  "8943",
-		RestService: true,
-		PreferIP:    true,
-		Username:    "user",
-		Password:    "password",
-		Secure:      false,
-	}
-
+	config := fairway.GetFile(conf)
 	eureka := fairway.Init(config)
 	eurekaRoutes := eureka.Routes
 
@@ -48,24 +37,23 @@ func main() {
 			Method:   "GET",
 			Pattern:  "/",
 			Produces: "text/html",
-			Handler:  http.FileServer(http.Dir("/data/fairway/site")),
+			Handler:  http.FileServer(http.Dir(config.ServeDir)),
 			Static:   true,
 		},
 	}
 
 	routes = fairway.CombineRoutes(routes, eurekaRoutes)
 
-	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
-	logger.Printf("Server is starting...")
+	fmt.Println("Server is starting...")
 
 	router := mux.NewRouter()
 
 	router = fairway.BuildRoutes(routes, router)
 
-	log.Println("Server is up and listening on ", listenAddr)
-	err := http.ListenAndServe(listenAddr, router)
+	fmt.Println("Server is up and listening on ", config.Port)
+	err := http.ListenAndServe(":"+config.Port, router)
 	if err != nil {
-		logger.Fatal("Unable to start server", err)
+		log.Fatal("Unable to start server", err)
 	}
 }
 

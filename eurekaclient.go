@@ -91,7 +91,7 @@ func createRegistration(config EurekaConfig) EurekaRegistration {
 
 	reg := EurekaRegistration{}
 	unsecurePort := port{PortNumber: config.Port, Enabled: true}
-	secureport := port{PortNumber: config.SecurePort, Enabled: true}
+	secureport := port{PortNumber: config.SecurePort, Enabled: false}
 	dataCenter := dataCenter{Class: "com.netflix.appinfo.MyDataCenterInfo", Name: "MyOwn"}
 	instance := instance{
 		InstanceID:     config.Name + ":" + instanceID,
@@ -106,8 +106,8 @@ func createRegistration(config EurekaConfig) EurekaRegistration {
 		StatusPageURL:  fmt.Sprintf("http://%s:%s/actuator/info", config.IPAddress, config.Port),
 		HealthCheckURL: fmt.Sprintf("http://%s:%s/actuator/health", config.IPAddress, config.Port),
 		DataCenterInfo: dataCenter}
-
 	reg.Instance = instance
+	logger.Infof("%v\n", reg)
 	return reg
 }
 

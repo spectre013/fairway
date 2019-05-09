@@ -8,7 +8,7 @@ COPY .skel /
 COPY .skel /skel
 COPY site /data/fairway/site
 
-COPY example /data/fairway/bin/static
+COPY fairway /data/fairway/bin/static
 
 RUN chmod u+xw /data/fairway/run.sh
 CMD [ "supervisord", "-n" ]

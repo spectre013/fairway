@@ -1,0 +1,9 @@
+conf:
+  name: fairway
+  servedir: site/
+  port: 8001
+  secureport: 8943
+  eurekahost: http://docker.for.mac.localhost:8761/eureka
+  preferip: false
+  restservice: true
+  secure: false
